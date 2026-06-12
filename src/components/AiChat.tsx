@@ -1,0 +1,212 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Bot, SendHorizonal, X } from "lucide-react";
+import { QUICK_QA } from "@/data/event";
+
+interface Msg {
+  role: "user" | "assistant";
+  content: string;
+}
+
+const HELLO: Msg = {
+  role: "assistant",
+  content:
+    "信号接通。我是零号参谋，负责 7.11 企划情报问答。\n常见问题点下方快捷指令（不耗算力，秒回）；其他问题直接输入。",
+};
+
+/** 客户端软限额：每日条数（服务端还有硬限额兜底） */
+const DAILY_LIMIT = 30;
+function quotaKey() {
+  return `bw-chat-quota-${new Date().toISOString().slice(0, 10)}`;
+}
+function takeQuota(): boolean {
+  try {
+    const n = Number(localStorage.getItem(quotaKey()) ?? "0");
+    if (n >= DAILY_LIMIT) return false;
+    localStorage.setItem(quotaKey(), String(n + 1));
+    return true;
+  } catch {
+    return true;
+  }
+}
+
+export default function AiChat() {
+  const [open, setOpen] = useState(false);
+  const [msgs, setMsgs] = useState<Msg[]>([HELLO]);
+  const [input, setInput] = useState("");
+  const [busy, setBusy] = useState(false);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
+  }, [msgs, open]);
+
+  const askLocal = (q: string, a: string) => {
+    if (busy) return;
+    setMsgs((m) => [...m, { role: "user", content: q }, { role: "assistant", content: a }]);
+  };
+
+  const askRemote = async (text: string) => {
+    const q = text.trim();
+    if (!q || busy) return;
+    setInput("");
+
+    // 命中快捷问题直接本地回答
+    const hit = QUICK_QA.find((x) => x.q === q);
+    if (hit) {
+      askLocal(hit.q, hit.a);
+      return;
+    }
+
+    if (!takeQuota()) {
+      setMsgs((m) => [
+        ...m,
+        { role: "user", content: q },
+        { role: "assistant", content: "今日算力配额已耗尽（30 条/日）。快捷指令不限量，或明天再来。" },
+      ]);
+      return;
+    }
+
+    const history = [...msgs.filter((m) => m !== HELLO), { role: "user" as const, content: q }];
+    setMsgs((m) => [...m, { role: "user", content: q }, { role: "assistant", content: "" }]);
+    setBusy(true);
+
+    const appendLast = (chunk: string) =>
+      setMsgs((m) => {
+        const copy = [...m];
+        copy[copy.length - 1] = {
+          role: "assistant",
+          content: copy[copy.length - 1].content + chunk,
+        };
+        return copy;
+      });
+    const setLast = (content: string) =>
+      setMsgs((m) => [...m.slice(0, -1), { role: "assistant", content }]);
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: history.slice(-8) }),
+      });
+
+      if (res.headers.get("content-type")?.includes("application/json")) {
+        const data = (await res.json()) as { reply?: string; error?: string };
+        setLast(data.reply ?? data.error ?? "通讯异常，请稍后重试。");
+        return;
+      }
+      if (!res.ok || !res.body) {
+        setLast("通讯异常，请稍后重试。");
+        return;
+      }
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        appendLast(decoder.decode(value, { stream: true }));
+      }
+    } catch {
+      setLast("链路中断 — 请检查网络后重试，或使用快捷指令。");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <>
+      {/* 悬浮入口 */}
+      <button
+        aria-label="AI 战术参谋"
+        onClick={() => setOpen((v) => !v)}
+        className="fixed bottom-4 right-4 z-50 grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-cyber to-neon text-slate-950 shadow-[0_0_24px_rgba(0,245,212,0.4)]"
+      >
+        <span className="absolute inset-0 animate-pulse-ring rounded-full border-2 border-neon" />
+        {open ? <X size={24} /> : <Bot size={26} />}
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: 24, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 24, scale: 0.96 }}
+            transition={{ duration: 0.22 }}
+            className="clip-corner fixed bottom-20 left-3 right-3 z-50 flex h-[64dvh] flex-col border border-neon/40 bg-slate-950/97 md:left-auto md:right-6 md:h-[540px] md:w-[390px]"
+          >
+            {/* 标题栏 */}
+            <div className="flex items-center justify-between border-b border-neon/20 px-4 py-2.5">
+              <span className="font-mono text-[11px] tracking-[0.25em] text-neon">
+                TACTICAL_ADVISOR // 零号参谋
+              </span>
+              <span className="flex items-center gap-1.5 font-mono text-[10px] text-slate-500">
+                <span className="h-1.5 w-1.5 rounded-full bg-neon" />
+                ONLINE
+              </span>
+            </div>
+
+            {/* 消息流 */}
+            <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto p-4">
+              {msgs.map((m, i) => (
+                <div
+                  key={i}
+                  className={`max-w-[88%] whitespace-pre-wrap border px-3 py-2 text-[13px] leading-6 ${
+                    m.role === "user"
+                      ? "ml-auto border-cyber/50 bg-cyber/10 text-slate-100"
+                      : "border-neon/30 bg-slate-900/80 text-slate-200"
+                  }`}
+                >
+                  {m.content || (
+                    <span className="font-mono text-neon/70">
+                      解码中<span className="animate-blink">▍</span>
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* 快捷指令 */}
+            <div className="flex gap-2 overflow-x-auto border-t border-neon/15 px-3 py-2.5 [scrollbar-width:none]">
+              {QUICK_QA.map((x) => (
+                <button
+                  key={x.q}
+                  onClick={() => askLocal(x.q, x.a)}
+                  className="shrink-0 border border-slate-700 bg-slate-900 px-3 py-1.5 font-mono text-[11px] text-slate-300 hover:border-neon/50 hover:text-neon"
+                >
+                  {x.q}
+                </button>
+              ))}
+            </div>
+
+            {/* 输入区 */}
+            <form
+              className="flex gap-2 border-t border-neon/15 p-3"
+              onSubmit={(e) => {
+                e.preventDefault();
+                askRemote(input);
+              }}
+            >
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="输入企划相关问题…"
+                maxLength={400}
+                className="min-w-0 flex-1 border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 outline-none placeholder:text-slate-600 focus:border-neon/60"
+              />
+              <button
+                type="submit"
+                disabled={busy || !input.trim()}
+                aria-label="发送"
+                className="grid w-11 place-items-center bg-neon text-slate-950 disabled:opacity-40"
+              >
+                <SendHorizonal size={17} />
+              </button>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
