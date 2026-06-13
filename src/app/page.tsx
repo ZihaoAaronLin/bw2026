@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { DISCLAIMERS, EVENT, FACTIONS, type Faction } from "@/data/event";
+import { needReconfirm } from "@/lib/visit";
 import AiChat from "@/components/AiChat";
 import BootOverlay from "@/components/BootOverlay";
 import FieldIntel from "@/components/FieldIntel";
@@ -27,10 +28,15 @@ export default function Home() {
     window.scrollTo(0, 0);
   }, []);
 
-  // 注水持久化状态：已确认过生存红线则跳过强制门；恢复上次选择的阵营
+  // 注水持久化状态：生存红线确认在 5 次访问内则跳过强制门，否则重弹并清空旧勾选；
+  // 恢复上次选择的阵营
   useEffect(() => {
     try {
-      if (localStorage.getItem("bw-survival-done") === "1") setSurvival("done");
+      if (needReconfirm("bw-survival-done-at")) {
+        localStorage.removeItem("bw-survival-checks"); // 强制重勾：清空旧勾选
+      } else {
+        setSurvival("done");
+      }
       const fid = localStorage.getItem("bw-faction");
       if (fid) {
         const f = FACTIONS.find((x) => x.id === fid);

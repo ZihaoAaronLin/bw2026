@@ -24,6 +24,7 @@ import {
 } from "@/data/event";
 import SectionHeader from "./SectionHeader";
 import { usePersistentState } from "@/lib/usePersistentState";
+import { currentVisit, needReconfirm } from "@/lib/visit";
 
 const DECRYPT_LINES = [
   "> AUTH_REQUEST :: 4/4 PROTOCOLS ACCEPTED",
@@ -110,24 +111,16 @@ export default function TerminalUnlock() {
   const safe = PROTOCOLS.map((_, i) => checked[i] ?? false);
   const allChecked = safe.every(Boolean);
 
-  // 注水：上次已解锁则直接展开情报，不重播解码动画
+  // 注水：上次解锁在 5 次访问内则直接展开情报；否则强制重新签署（清空旧勾选）
   useEffect(() => {
-    try {
-      if (localStorage.getItem("bw-terminal-unlocked") === "1") setPhase("open");
-    } catch {
-      /* 隐私模式静默降级 */
+    if (needReconfirm("bw-terminal-unlocked-at")) {
+      setChecked(PROTOCOLS.map(() => false));
+    } else {
+      setPhase("open");
     }
+    // 只在挂载时判定一次
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // 解锁后持久化标记
-  useEffect(() => {
-    if (phase !== "open") return;
-    try {
-      localStorage.setItem("bw-terminal-unlocked", "1");
-    } catch {
-      /* 同上 */
-    }
-  }, [phase]);
 
   useEffect(() => {
     if (phase !== "decrypting") return;
@@ -137,7 +130,15 @@ export default function TerminalUnlock() {
       setLines(DECRYPT_LINES.slice(0, i));
       if (i >= DECRYPT_LINES.length) {
         clearInterval(id);
-        setTimeout(() => setPhase("open"), 500);
+        setTimeout(() => {
+          // 仅在用户真正完成解码时记录访问号（注水恢复不写，避免周期被重置）
+          try {
+            localStorage.setItem("bw-terminal-unlocked-at", String(currentVisit()));
+          } catch {
+            /* 隐私模式静默降级 */
+          }
+          setPhase("open");
+        }, 500);
       }
     }, 380);
     return () => clearInterval(id);
