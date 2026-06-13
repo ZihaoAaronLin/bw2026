@@ -37,12 +37,42 @@ export default function AiChat() {
   const [msgs, setMsgs] = useState<Msg[]>([HELLO]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [showHint, setShowHint] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
   }, [msgs, open]);
+
+  // 新访客引导气泡：没开过聊天就在 bot 上方冒个提示，延迟 2.5s 出现
+  useEffect(() => {
+    try {
+      if (localStorage.getItem("bw-chat-opened-ever")) return;
+    } catch {
+      /* 隐私模式：照常显示 */
+    }
+    const t = setTimeout(() => setShowHint(true), 2500);
+    return () => clearTimeout(t);
+  }, []);
+
+  const openChat = () => {
+    setOpen(true);
+    setShowHint(false);
+    try {
+      localStorage.setItem("bw-chat-opened-ever", "1");
+    } catch {
+      /* 静默降级 */
+    }
+  };
+  const dismissHint = () => {
+    setShowHint(false);
+    try {
+      localStorage.setItem("bw-chat-opened-ever", "1");
+    } catch {
+      /* 静默降级 */
+    }
+  };
 
   const askLocal = (q: string, a: string) => {
     if (busy) return;
@@ -140,10 +170,40 @@ export default function AiChat() {
 
   return (
     <>
+      {/* 新访客引导气泡 */}
+      <AnimatePresence>
+        {showHint && !open && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.9 }}
+            transition={{ duration: 0.25 }}
+            className="fixed bottom-[84px] right-4 z-50 max-w-[230px]"
+          >
+            <button
+              onClick={openChat}
+              className="clip-corner-sm block w-full border border-neon/50 bg-slate-900/95 px-3.5 py-2.5 text-left text-[13px] leading-5 text-slate-100"
+            >
+              <span className="font-bold text-neon">新来的？</span>
+              点我，第一条「这个网站怎么用」带你逛 👇
+            </button>
+            <button
+              onClick={dismissHint}
+              aria-label="关闭提示"
+              className="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full border border-slate-600 bg-slate-950 text-slate-400"
+            >
+              <X size={11} />
+            </button>
+            {/* 指向 bot 的小尾巴 */}
+            <span className="absolute -bottom-1 right-7 h-3 w-3 rotate-45 border-b border-r border-neon/50 bg-slate-900/95" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* 悬浮入口 */}
       <button
         aria-label="AI 战术参谋"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => (open ? setOpen(false) : openChat())}
         className="fixed bottom-4 right-4 z-50 grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-cyber to-neon text-slate-950 shadow-[0_0_24px_rgba(0,245,212,0.4)]"
       >
         <span className="absolute inset-0 animate-pulse-ring rounded-full border-2 border-neon" />
