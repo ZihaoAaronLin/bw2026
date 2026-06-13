@@ -56,6 +56,42 @@ body {
   display: none;
 }
 
+/* ===== 应援泡泡墙：纯 transform/opacity 动画，走合成器，低端机友好 ===== */
+.wall-bubble {
+  will-change: transform, opacity;
+  animation-name: wall-rise;
+  animation-timing-function: cubic-bezier(0.33, 0, 0.4, 1);
+  animation-fill-mode: forwards;
+}
+.wall-paused .wall-bubble {
+  animation-play-state: paused; /* 离开视口暂停，不在屏外烧帧 */
+}
+@keyframes wall-rise {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  50% {
+    transform: translate3d(14px, -240px, 0);
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(-10px, -480px, 0);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* 系统开启「减弱动态效果」时彻底不跑漂浮动画 */
+  .wall-bubble {
+    animation: none;
+  }
+}
+
 /* ===== CRT 扫描线（全局一层，静态，零动画成本） ===== */
 .scanlines {
   pointer-events: none;

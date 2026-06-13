@@ -14,6 +14,7 @@ import PosterGenerator from "@/components/PosterGenerator";
 import RadarMap from "@/components/RadarMap";
 import SurvivalModal from "@/components/SurvivalModal";
 import TerminalUnlock from "@/components/TerminalUnlock";
+import WallSay from "@/components/WallSay";
 
 export default function Home() {
   const [booted, setBooted] = useState(false);
@@ -88,6 +89,7 @@ export default function Home() {
         <RadarMap faction={faction} />
         <FieldIntel />
         <Gallery />
+        <WallSay />
       </main>
 
       <footer className="border-t border-slate-800 px-4 py-12">

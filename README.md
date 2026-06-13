@@ -30,6 +30,25 @@ npm run dev   # http://localhost:3000
 要严格的跨实例限流，把 `route.ts` 的内存 Map 换成 Upstash Redis（Vercel
 Marketplace 一键添加）。本企划生命周期短、有余额兜底，按需选配即可。
 
+## 应援泡泡墙（MODULE_07 · Have your say）
+
+留言像泡泡一样飘在墙上。两种模式自动切换：
+
+- **不配置后端** → 本地氛围版：只飘自己发的 + 预设应援泡泡，刷新即清，零成本零风险。
+- **配置后端** → 真·共享版：所有人发的所有人可见（轮询刷新），像 Wooclap。
+
+开共享版的步骤：
+
+1. Vercel 项目 → Storage / Marketplace 添加 **Upstash Redis**（免费档够用），
+   连接后 `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` 会自动注入环境变量。
+2. 可选设 `WALL_ADMIN_SECRET`（随机串）。当天有人发不当内容，团长执行
+   `DELETE /api/wall?secret=<你的串>` 即可一键清墙。
+3. 重新部署即生效。
+
+内置防护：单条 ≤40 字、敏感词/广告链接过滤（`src/lib/wall.ts` 的 `BLOCK` 可扩充）、
+按 IP 限频（15s 冷却 + 每日 30 条，Redis 持久计数）。**匿名公开墙仍有内容风险，
+建议当天安排人盯一眼，用清墙密钥兜底。**
+
 ## 换 BGM / 加照片
 
 - **BGM**：把 mp3/m4a 放进 `public/audio/`，在 `event.ts` 的 `PLAYLIST` 登记。
