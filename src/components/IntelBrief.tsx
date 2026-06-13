@@ -26,17 +26,20 @@ function useCountdown(target: string) {
   const h = Math.floor((left % 86400000) / 3600000);
   const m = Math.floor((left % 3600000) / 60000);
   const s = Math.floor((left % 60000) / 1000);
-  return { d, h, m, s };
+  return { d, h, m, s, done: left <= 0 };
 }
 
 function CountdownCard({
   label,
   target,
   accent,
+  expiredLabel,
 }: {
   label: string;
   target: string;
   accent: string;
+  /** 倒计时归零后展示的文案，避免永远停在 0 */
+  expiredLabel: string;
 }) {
   const c = useCountdown(target);
   return (
@@ -46,7 +49,11 @@ function CountdownCard({
     >
       <p className="font-mono text-[10px] tracking-[0.3em] text-slate-400">{label}</p>
       <div className="mt-2 flex items-baseline gap-1 font-mono" style={{ color: accent }}>
-        {c ? (
+        {c === null ? (
+          <span className="text-2xl font-black">--:--:--</span>
+        ) : c.done ? (
+          <span className="text-2xl font-black md:text-3xl">{expiredLabel}</span>
+        ) : (
           <>
             <span className="text-4xl font-black md:text-5xl">{c.d}</span>
             <span className="mr-2 text-xs">DAYS</span>
@@ -55,8 +62,6 @@ function CountdownCard({
               {String(c.s).padStart(2, "0")}
             </span>
           </>
-        ) : (
-          <span className="text-2xl font-black">--:--:--</span>
         )}
       </div>
     </div>
@@ -71,14 +76,16 @@ const fadeUp = {
 } as const;
 
 export default function IntelBrief() {
+  // 进度条以当前报名最多的阵营为满格，报名数更新后不会溢出
+  const maxSigned = Math.max(...FACTIONS.map((f) => f.signed));
   return (
     <section id="intel" className="mx-auto w-full max-w-5xl px-4 py-20">
       <SectionHeader code="MODULE_01" title="核心情报" en="INTEL BRIEF" />
 
       {/* 双倒计时 */}
       <motion.div {...fadeUp} className="flex flex-col gap-3 md:flex-row">
-        <CountdownCard label="距 6.21 开票 // TICKET DROP" target={TICKETS.saleStart} accent="#f4a623" />
-        <CountdownCard label="距 7.11 开场 // OPENING DAY" target={EVENT.dDay} accent="#ff003c" />
+        <CountdownCard label="距 6.21 开票 // TICKET DROP" target={TICKETS.saleStart} accent="#f4a623" expiredLabel="已开票 · 速抢！" />
+        <CountdownCard label="距 7.11 开场 // OPENING DAY" target={EVENT.dDay} accent="#ff003c" expiredLabel="活动进行中！" />
       </motion.div>
 
       {/* 关键事实 */}
@@ -198,7 +205,7 @@ export default function IntelBrief() {
                   transition={{ duration: 0.9, ease: "easeOut" }}
                   className="h-full origin-left"
                   style={{
-                    width: `${(f.signed / 1081) * 100}%`,
+                    width: `${(f.signed / maxSigned) * 100}%`,
                     background: `linear-gradient(90deg, ${f.colorDim}, ${f.color})`,
                   }}
                 />

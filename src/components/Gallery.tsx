@@ -126,7 +126,7 @@ export default function Gallery() {
 
   return (
     <section className="mx-auto w-full max-w-5xl px-4 py-20">
-      <SectionHeader code="MODULE_05" title="影像档案馆" en="PHOTO ARCHIVE" />
+      <SectionHeader code="MODULE_06" title="影像档案馆" en="PHOTO ARCHIVE" />
 
       {PHOTOS.length === 0 ? (
         <p className="py-12 text-center font-mono text-sm tracking-[0.3em] text-slate-600">

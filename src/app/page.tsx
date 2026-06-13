@@ -5,6 +5,7 @@ import { AnimatePresence } from "framer-motion";
 import { DISCLAIMERS, EVENT, type Faction } from "@/data/event";
 import AiChat from "@/components/AiChat";
 import BootOverlay from "@/components/BootOverlay";
+import FieldIntel from "@/components/FieldIntel";
 import Gallery from "@/components/Gallery";
 import Hero from "@/components/Hero";
 import IntelBrief from "@/components/IntelBrief";
@@ -61,6 +62,7 @@ export default function Home() {
         <TerminalUnlock />
         <PosterGenerator faction={faction} onSelect={setFaction} />
         <RadarMap faction={faction} />
+        <FieldIntel />
         <Gallery />
       </main>
 

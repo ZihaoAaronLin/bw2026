@@ -86,23 +86,33 @@ export async function POST(req: Request) {
     });
   }
 
-  const upstream = await fetch(
-    `${process.env.DEEPSEEK_BASE_URL ?? "https://api.deepseek.com"}/chat/completions`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+  let upstream: Response;
+  try {
+    upstream = await fetch(
+      `${process.env.DEEPSEEK_BASE_URL ?? "https://api.deepseek.com"}/chat/completions`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: process.env.DEEPSEEK_MODEL ?? "deepseek-chat",
+          stream: true,
+          max_tokens: 500,
+          temperature: 0.6,
+          messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages.slice(-8)],
+        }),
+        // 上游卡死保护：30s 无响应即中断，返回干净错误而非挂死请求
+        signal: AbortSignal.timeout(30000),
       },
-      body: JSON.stringify({
-        model: process.env.DEEPSEEK_MODEL ?? "deepseek-chat",
-        stream: true,
-        max_tokens: 500,
-        temperature: 0.6,
-        messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages.slice(-8)],
-      }),
-    },
-  );
+    );
+  } catch {
+    return Response.json(
+      { error: "上游链路超时或无法连接，请稍后重试。" },
+      { status: 504 },
+    );
+  }
 
   if (!upstream.ok || !upstream.body) {
     return Response.json(

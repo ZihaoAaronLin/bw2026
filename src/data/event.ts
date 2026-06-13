@@ -218,6 +218,74 @@ export const DISCLAIMERS = [
 export const PHOTO_NOTE =
   "活动全程预计录像/直播，双主摄+多副摄+流动摄影。跟随剧组默认同意拍摄肖像权。";
 
+/* ============ 落地情报 · 当天到场 & 现场实用信息 ============ */
+/**
+ * 交通数据源自计划书「关于交通（2025 年）」，往年经验总结，以现场指引为准。
+ * 这是一个「攒经验」的模块——后续有新的现场实用信息，直接往这个数组加条目即可。
+ */
+export type FieldIntelIcon = "metro" | "taxi" | "bus" | "supplies" | "heat" | "tip";
+
+export const FIELD_INTEL: {
+  icon: FieldIntelIcon;
+  title: string;
+  tag?: string;
+  lines: string[];
+}[] = [
+  {
+    icon: "metro",
+    title: "地铁到场",
+    tag: "最稳",
+    lines: [
+      "「国家会展中心站」4 / 5 / 6 号口直达场馆",
+      "高峰人潮汹涌，预留排队时间——14:00 集合掐死不等人",
+    ],
+  },
+  {
+    icon: "taxi",
+    title: "打车 / 网约车下客点",
+    lines: [
+      "目的地填「诸光路 · 国家会展中心西门」",
+      "出租车走诸光路西入口经 20 号门，到北厅外专用车道边下客",
+      "空载出租经 18 号门进场蓄车；散场极堵，优先地铁",
+    ],
+  },
+  {
+    icon: "bus",
+    title: "公交线路",
+    lines: [
+      "706 区间 / 710 / 872 / 1503 / 1511 / 1512",
+      "青浦 20 / 青浦 25 / 徐泾 2 区间 / 徐泾 4 / 徐泾 5",
+    ],
+  },
+  {
+    icon: "tip",
+    title: "现场集合 & 签到",
+    lines: [
+      "集合点暂定 3H 与 4.1H，以当日群通知为准",
+      "现场有签名画布；全程跟拍，入镜默认同意肖像权",
+    ],
+  },
+  {
+    icon: "supplies",
+    title: "免费应急物资 · 找团长",
+    lines: [
+      "透明肩带 / 防走光贴 / 一次性拖鞋 / 一字夹 / 创可贴",
+      "藿香正气水 / 常用医用品，均不收费，遇事直接联系团长",
+    ],
+  },
+  {
+    icon: "heat",
+    title: "7 月魔都 · 防暑防雨",
+    lines: [
+      "带含盐含糖的水 + 含糖零食，谨防低血糖",
+      "每年 BW 必下雨，带伞遮雨遮阳；8 馆全开极费脚，备平底鞋",
+    ],
+  },
+];
+
+export const FIELD_INTEL_NOTE =
+  "交通为往年（2025）经验总结，场馆指引与当日群通知为准。有新现场情报欢迎补充给团长。";
+
 /* ============ 照片档案（把真实照片放进 public/photos 并在此登记） ============ */
 export interface Photo {
   src: string;
@@ -259,6 +327,10 @@ export const QUICK_QA: { q: string; a: string }[] = [
     a: `7 月 11 日 14:00 集合，地点暂定 ${EVENT.rally}。\n当日流程（预）：${TIMELINE_DETAIL.map((t) => `${t.time} ${t.label}`).join(" → ")}。\n注意：时间掐死，不会等待个别人员！`,
   },
   {
+    q: "怎么去会展中心？",
+    a: "地铁最稳：「国家会展中心站」4/5/6 号口直达场馆。\n打车/网约车目的地填「诸光路·国家会展中心西门」，出租车走诸光路西入口经 20 号门到北厅外下客。\n公交：706区间/710/872/1503/1511/1512、青浦20/青浦25/徐泾2区间/徐泾4/徐泾5。\n散场极堵，强烈建议地铁优先。",
+  },
+  {
     q: "怎么进群？",
     a: `QQ 群于一开（6.21）之后开放：\n${NICKNAME_RULE}`,
   },
@@ -296,6 +368,7 @@ export function buildIntelDossier(): string {
     `入场协议：${PROTOCOLS.join("；")}。`,
     `生存注意：${SURVIVAL.map((s) => `${s.text}（${s.why}）`).join("；")}。${SUPPLIES_NOTE}`,
     `摄影：${PHOTO_NOTE}`,
+    `到场交通（2025 往年经验）：${FIELD_INTEL.map((c) => `${c.title}——${c.lines.join("，")}`).join("；")}。`,
     `人数（${CREW_STATS.asOf}）：报名 ${CREW_STATS.signedTotal}（除重 ${CREW_STATS.signedUnique}），预计场内 ${CREW_STATS.expectedTotal}（除重 ${CREW_STATS.expectedUnique}）。各团：${FACTIONS.map((f) => `${f.name} ${f.signed}`).join("、")}。`,
     `免责：${DISCLAIMERS.join("；")}。`,
     `后续：群聊长期开放不解散，将打造跨漫展 IP coser 团，不限江浙沪。`,
