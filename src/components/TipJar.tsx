@@ -49,40 +49,49 @@ export default function TipJar() {
                 </button>
               </div>
 
-              <p className="mb-4 text-xs leading-5 text-slate-400">{TIP.note}</p>
+              {TIP.closed ? (
+                /* 暂时关闭：只显示一段话，不露收款码 */
+                <p className="whitespace-pre-line py-2 text-sm leading-7 text-slate-300">
+                  {TIP.closedMsg}
+                </p>
+              ) : (
+                <>
+                  <p className="mb-4 text-xs leading-5 text-slate-400">{TIP.note}</p>
 
-              {/* 方式切换 */}
-              <div className="mb-3 flex gap-2">
-                {TIP.methods.map((m, i) => (
-                  <button
-                    key={m.label}
-                    onClick={() => setActive(i)}
-                    className="flex-1 border px-3 py-1.5 text-xs font-bold transition-colors"
-                    style={
-                      i === active
-                        ? { borderColor: m.color, color: m.color, background: `${m.color}1a` }
-                        : { borderColor: "#334155", color: "#94a3b8" }
-                    }
-                  >
-                    {m.label}
-                  </button>
-                ))}
-              </div>
+                  {/* 方式切换 */}
+                  <div className="mb-3 flex gap-2">
+                    {TIP.methods.map((m, i) => (
+                      <button
+                        key={m.label}
+                        onClick={() => setActive(i)}
+                        className="flex-1 border px-3 py-1.5 text-xs font-bold transition-colors"
+                        style={
+                          i === active
+                            ? { borderColor: m.color, color: m.color, background: `${m.color}1a` }
+                            : { borderColor: "#334155", color: "#94a3b8" }
+                        }
+                      >
+                        {m.label}
+                      </button>
+                    ))}
+                  </div>
 
-              {/* 收款码 */}
-              <div className="mx-auto w-full max-w-[260px]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={method.qr}
-                  alt={`${method.label}收款码`}
-                  className="w-full rounded-lg border-2"
-                  style={{ borderColor: method.color }}
-                />
-              </div>
+                  {/* 收款码 */}
+                  <div className="mx-auto w-full max-w-[260px]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={method.qr}
+                      alt={`${method.label}收款码`}
+                      className="w-full rounded-lg border-2"
+                      style={{ borderColor: method.color }}
+                    />
+                  </div>
 
-              <p className="mt-4 text-center font-mono text-[11px] tracking-wider text-neon/80">
-                {TIP.thanks}
-              </p>
+                  <p className="mt-4 text-center font-mono text-[11px] tracking-wider text-neon/80">
+                    {TIP.thanks}
+                  </p>
+                </>
+              )}
             </motion.div>
           </motion.div>
         )}
