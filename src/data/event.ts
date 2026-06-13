@@ -35,8 +35,8 @@ export const TIP = {
   note: "网站是用爱发电的副产品，喜欢的话可以投喂一杯快乐水～ 全凭自愿，不投也照样能用全部功能！",
   thanks: "谢谢你的投喂，魔都现场见！",
   methods: [
-    { label: "微信", color: "#07c160", qr: "/tip/wechat.JPG" },
-    { label: "支付宝", color: "#1677ff", qr: "/tip/alipay.JPG" },
+    { label: "微信", color: "#07c160", qr: "/tip/wechat.svg" },
+    { label: "支付宝", color: "#1677ff", qr: "/tip/alipay.svg" },
   ],
 } as const;
 
