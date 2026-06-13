@@ -1,14 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Check, ShieldAlert, Square, SquareCheckBig } from "lucide-react";
 import { SUPPLIES_NOTE, SURVIVAL } from "@/data/event";
+import { usePersistentState } from "@/lib/usePersistentState";
 
-/** 生存红线确认：全部勾选前不放行（红 → 绿） */
+/** 生存红线确认：全部勾选前不放行（红 → 绿）；勾选状态持久化，出行前可反复核对 */
 export default function SurvivalModal({ onConfirm }: { onConfirm: () => void }) {
-  const [checked, setChecked] = useState<boolean[]>(SURVIVAL.map(() => false));
-  const allChecked = checked.every(Boolean);
+  const [checked, setChecked] = usePersistentState<boolean[]>(
+    "bw-survival-checks",
+    SURVIVAL.map(() => false),
+  );
+  // 长度兜底：未来增删红线项时旧数据不至于错位
+  const safe = SURVIVAL.map((_, i) => checked[i] ?? false);
+  const allChecked = safe.every(Boolean);
 
   // 弹窗期间锁滚动
   useEffect(() => {
@@ -65,7 +71,7 @@ export default function SurvivalModal({ onConfirm }: { onConfirm: () => void }) 
                   setChecked((c) => c.map((v, j) => (j === i ? !v : v)))
                 }
               >
-                {checked[i] ? (
+                {safe[i] ? (
                   <SquareCheckBig size={18} className="mt-0.5 shrink-0 text-neon" />
                 ) : (
                   <Square size={18} className="mt-0.5 shrink-0 text-alert/80" />
@@ -73,7 +79,7 @@ export default function SurvivalModal({ onConfirm }: { onConfirm: () => void }) 
                 <span>
                   <span
                     className={`block text-sm font-bold ${
-                      checked[i] ? "text-neon" : "text-slate-100"
+                      safe[i] ? "text-neon" : "text-slate-100"
                     }`}
                   >
                     {item.text}
@@ -93,7 +99,14 @@ export default function SurvivalModal({ onConfirm }: { onConfirm: () => void }) 
 
         <button
           disabled={!allChecked}
-          onClick={onConfirm}
+          onClick={() => {
+            try {
+              localStorage.setItem("bw-survival-done", "1");
+            } catch {
+              /* 隐私模式静默降级 */
+            }
+            onConfirm();
+          }}
           className={`clip-corner-sm mt-5 flex w-full items-center justify-center gap-2 py-3.5 font-mono text-sm font-bold tracking-[0.25em] transition-colors duration-300 ${
             allChecked
               ? "bg-neon text-slate-950"
@@ -101,7 +114,7 @@ export default function SurvivalModal({ onConfirm }: { onConfirm: () => void }) 
           }`}
         >
           <Check size={18} />
-          {allChecked ? "确认收到 · 解除警报" : `逐条勾选确认（${checked.filter(Boolean).length}/${SURVIVAL.length}）`}
+          {allChecked ? "确认收到 · 解除警报" : `逐条勾选确认（${safe.filter(Boolean).length}/${SURVIVAL.length}）`}
         </button>
       </motion.div>
     </motion.div>

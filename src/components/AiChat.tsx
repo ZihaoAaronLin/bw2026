@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bot, SendHorizonal, X } from "lucide-react";
+import { Bot, SendHorizonal, Square, X } from "lucide-react";
 import { QUICK_QA } from "@/data/event";
 
 interface Msg {
@@ -38,6 +38,7 @@ export default function AiChat() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
@@ -85,11 +86,17 @@ export default function AiChat() {
     const setLast = (content: string) =>
       setMsgs((m) => [...m.slice(0, -1), { role: "assistant", content }]);
 
+    // 中断控制：用户点停止、或 40s 兜底超时，均中断本次请求
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+    const timer = setTimeout(() => ctrl.abort(), 40000);
+
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: history.slice(-8) }),
+        signal: ctrl.signal,
       });
 
       if (res.headers.get("content-type")?.includes("application/json")) {
@@ -108,9 +115,25 @@ export default function AiChat() {
         if (done) break;
         appendLast(decoder.decode(value, { stream: true }));
       }
-    } catch {
-      setLast("链路中断 — 请检查网络后重试，或使用快捷指令。");
+    } catch (e) {
+      const aborted = (e as Error)?.name === "AbortError";
+      // 已有部分内容则保留，仅在空回复时给出提示
+      setMsgs((m) => {
+        const last = m[m.length - 1];
+        if (last?.role === "assistant" && last.content) return m;
+        return [
+          ...m.slice(0, -1),
+          {
+            role: "assistant",
+            content: aborted
+              ? "已停止。需要的话可重新提问，或用快捷指令。"
+              : "链路中断 — 请检查网络后重试，或使用快捷指令。",
+          },
+        ];
+      });
     } finally {
+      clearTimeout(timer);
+      abortRef.current = null;
       setBusy(false);
     }
   };
@@ -195,14 +218,25 @@ export default function AiChat() {
                 maxLength={400}
                 className="min-w-0 flex-1 border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 outline-none placeholder:text-slate-600 focus:border-neon/60"
               />
-              <button
-                type="submit"
-                disabled={busy || !input.trim()}
-                aria-label="发送"
-                className="grid w-11 place-items-center bg-neon text-slate-950 disabled:opacity-40"
-              >
-                <SendHorizonal size={17} />
-              </button>
+              {busy ? (
+                <button
+                  type="button"
+                  onClick={() => abortRef.current?.abort()}
+                  aria-label="停止生成"
+                  className="grid w-11 place-items-center bg-alert text-white"
+                >
+                  <Square size={15} />
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={!input.trim()}
+                  aria-label="发送"
+                  className="grid w-11 place-items-center bg-neon text-slate-950 disabled:opacity-40"
+                >
+                  <SendHorizonal size={17} />
+                </button>
+              )}
             </form>
           </motion.div>
         )}

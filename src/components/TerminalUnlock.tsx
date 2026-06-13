@@ -23,6 +23,7 @@ import {
   QQ_GROUPS,
 } from "@/data/event";
 import SectionHeader from "./SectionHeader";
+import { usePersistentState } from "@/lib/usePersistentState";
 
 const DECRYPT_LINES = [
   "> AUTH_REQUEST :: 4/4 PROTOCOLS ACCEPTED",
@@ -100,10 +101,33 @@ function Accordion({
 }
 
 export default function TerminalUnlock() {
-  const [checked, setChecked] = useState<boolean[]>(PROTOCOLS.map(() => false));
+  const [checked, setChecked] = usePersistentState<boolean[]>(
+    "bw-terminal-checks",
+    PROTOCOLS.map(() => false),
+  );
   const [phase, setPhase] = useState<"locked" | "decrypting" | "open">("locked");
   const [lines, setLines] = useState<string[]>([]);
-  const allChecked = checked.every(Boolean);
+  const safe = PROTOCOLS.map((_, i) => checked[i] ?? false);
+  const allChecked = safe.every(Boolean);
+
+  // 注水：上次已解锁则直接展开情报，不重播解码动画
+  useEffect(() => {
+    try {
+      if (localStorage.getItem("bw-terminal-unlocked") === "1") setPhase("open");
+    } catch {
+      /* 隐私模式静默降级 */
+    }
+  }, []);
+
+  // 解锁后持久化标记
+  useEffect(() => {
+    if (phase !== "open") return;
+    try {
+      localStorage.setItem("bw-terminal-unlocked", "1");
+    } catch {
+      /* 同上 */
+    }
+  }, [phase]);
 
   useEffect(() => {
     if (phase !== "decrypting") return;
@@ -167,14 +191,14 @@ export default function TerminalUnlock() {
                       }
                       className="flex w-full items-start gap-2.5 text-left"
                     >
-                      {checked[i] ? (
+                      {safe[i] ? (
                         <SquareCheckBig size={17} className="mt-0.5 shrink-0 text-neon" />
                       ) : (
                         <Square size={17} className="mt-0.5 shrink-0 text-slate-500" />
                       )}
                       <span
                         className={`text-sm leading-6 ${
-                          checked[i] ? "text-neon" : "text-slate-300"
+                          safe[i] ? "text-neon" : "text-slate-300"
                         }`}
                       >
                         {p}
@@ -194,7 +218,7 @@ export default function TerminalUnlock() {
                       : "cursor-not-allowed bg-slate-800 text-slate-500"
                   }`}
                 >
-                  {allChecked ? "▶ EXECUTE · 解密情报" : `签署协议（${checked.filter(Boolean).length}/${PROTOCOLS.length}）`}
+                  {allChecked ? "▶ EXECUTE · 解密情报" : `签署协议（${safe.filter(Boolean).length}/${PROTOCOLS.length}）`}
                 </button>
               ) : (
                 <div className="mt-6 font-mono text-xs leading-7 text-neon terminal-text">

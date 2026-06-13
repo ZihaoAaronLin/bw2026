@@ -21,9 +21,14 @@ npm run dev   # http://localhost:3000
 2. 复制 `.env.example` 为 `.env.local`，填入 `DEEPSEEK_API_KEY`
 3. 不配置 key 网站照常运行，AI 返回离线提示，快捷问答全部可用
 
-限流：客户端 30 条/日（localStorage）+ 服务端 8 条/分、40 条/日（内存版）。
-上线后如需跨实例的严格限流，把 `src/app/api/chat/route.ts` 里的内存 Map 换成
-Upstash Redis（Vercel Marketplace 一键添加）。
+限流（三层，逐层变硬）：
+1. 客户端 30 条/日（localStorage）——清缓存/无痕即可绕过，仅劝退作用。
+2. 服务端 8 条/分、40 条/日——**内存版软限流**，Vercel serverless 每实例独立、
+   冷启动清零，挡不住分布式刷量，只削单实例峰值。
+3. **DeepSeek 预充值余额——这才是真正的硬上限**，充少量即止损，余额耗尽接口自动停。
+
+要严格的跨实例限流，把 `route.ts` 的内存 Map 换成 Upstash Redis（Vercel
+Marketplace 一键添加）。本企划生命周期短、有余额兜底，按需选配即可。
 
 ## 换 BGM / 加照片
 

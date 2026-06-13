@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
-import { DISCLAIMERS, EVENT, type Faction } from "@/data/event";
+import { DISCLAIMERS, EVENT, FACTIONS, type Faction } from "@/data/event";
 import AiChat from "@/components/AiChat";
 import BootOverlay from "@/components/BootOverlay";
 import FieldIntel from "@/components/FieldIntel";
@@ -25,6 +25,30 @@ export default function Home() {
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
     window.scrollTo(0, 0);
   }, []);
+
+  // 注水持久化状态：已确认过生存红线则跳过强制门；恢复上次选择的阵营
+  useEffect(() => {
+    try {
+      if (localStorage.getItem("bw-survival-done") === "1") setSurvival("done");
+      const fid = localStorage.getItem("bw-faction");
+      if (fid) {
+        const f = FACTIONS.find((x) => x.id === fid);
+        if (f) setFaction(f);
+      }
+    } catch {
+      /* 隐私模式静默降级 */
+    }
+  }, []);
+
+  // 阵营选择持久化
+  const selectFaction = (f: Faction) => {
+    setFaction(f);
+    try {
+      localStorage.setItem("bw-faction", f.id);
+    } catch {
+      /* 同上 */
+    }
+  };
 
   // 开机前锁滚动
   useEffect(() => {
@@ -60,7 +84,7 @@ export default function Home() {
         <Hero />
         <IntelBrief />
         <TerminalUnlock />
-        <PosterGenerator faction={faction} onSelect={setFaction} />
+        <PosterGenerator faction={faction} onSelect={selectFaction} />
         <RadarMap faction={faction} />
         <FieldIntel />
         <Gallery />
