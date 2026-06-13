@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Power, VolumeX } from "lucide-react";
+import { EVENT } from "@/data/event";
 import { useMusic } from "./MusicPlayer";
 
 const BOOT_LINES = [
@@ -81,6 +82,11 @@ export default function BootOverlay({ onDone }: { onDone: () => void }) {
           >
             <VolumeX size={13} /> 静音潜入
           </button>
+
+          {/* 作者署名 · 终端签名体 */}
+          <p className="absolute bottom-6 left-0 right-0 text-center font-mono text-[10px] tracking-[0.3em] text-slate-600">
+            {`// SITE BUILD — ${EVENT.author}`}
+          </p>
         </>
       ) : (
         <div className="w-full max-w-md font-mono text-sm leading-7 text-neon terminal-text">

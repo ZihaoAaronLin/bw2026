@@ -19,6 +19,19 @@ export const EVENT = {
   bml: "BiliBili Macro Link 音乐会 · 上海虹馆三楼 · 7.11–7.12",
   organizers: ["瑾瑜"],
   credit: "网站所有者：瑾瑜",
+  /** 网站作者（圈名/CN），用于扉页 & Hero 署名 */
+  author: "瑾瑜",
+} as const;
+
+/* ============ 投喂 / 赞赏 ============ */
+/** 把真实收款码图片放进 public/tip/ 并在此登记；qr 留空则该方式不显示 */
+export const TIP = {
+  note: "网站是用爱发电的副产品，喜欢的话可以投喂一杯快乐水～ 全凭自愿，不投也照样能用全部功能！",
+  thanks: "谢谢你的投喂，魔都现场见！",
+  methods: [
+    { label: "微信", color: "#07c160", qr: "/tip/wechat.svg" },
+    { label: "支付宝", color: "#1677ff", qr: "/tip/alipay.svg" },
+  ],
 } as const;
 
 export const TICKETS = {

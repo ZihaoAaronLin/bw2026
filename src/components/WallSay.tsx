@@ -102,9 +102,9 @@ export default function WallSay() {
     return () => io.disconnect();
   }, []);
 
-  // 主循环：出队生成泡泡（节流，受 MAX_BUBBLES 闸门）
+  // 主循环：出队生成泡泡（节流，受 MAX_BUBBLES 闸门）；弹窗打开时停摆
   useEffect(() => {
-    if (reduced || !inView) return;
+    if (reduced || !inView || showAll) return;
     const spawn = setInterval(() => {
       setBubbles((prev) => {
         if (prev.length >= MAX_BUBBLES) return prev;
@@ -134,7 +134,7 @@ export default function WallSay() {
       clearInterval(spawn);
       clearInterval(seed);
     };
-  }, [reduced, inView, enqueue]);
+  }, [reduced, inView, showAll, enqueue]);
 
   // 轮询新留言（仅共享模式 + 视口内）
   useEffect(() => {
@@ -240,7 +240,7 @@ export default function WallSay() {
 
       <div
         className={`relative h-[440px] overflow-hidden border border-neon/25 bg-slate-950/60 ${
-          inView ? "" : "wall-paused"
+          inView && !showAll ? "" : "wall-paused"
         }`}
       >
         {!reduced &&

@@ -15,6 +15,7 @@ import PosterGenerator from "@/components/PosterGenerator";
 import RadarMap from "@/components/RadarMap";
 import SurvivalModal from "@/components/SurvivalModal";
 import TerminalUnlock from "@/components/TerminalUnlock";
+import TipJar from "@/components/TipJar";
 import WallSay from "@/components/WallSay";
 
 export default function Home() {
@@ -104,8 +105,14 @@ export default function Home() {
             BW2026 // MIHOYO CREW · TERMINAL
           </p>
           <p className="mt-3 text-xs leading-6 text-slate-500">
-            主团长：{EVENT.organizers.join(" · ")}　协助：{EVENT.assistant}　{EVENT.credit}
+            主团长：{EVENT.organizers.join(" · ")}　协助：{EVENT.assistant}
           </p>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <span className="font-mono text-xs tracking-wider text-slate-400">
+              本站设计 · 制作 <span className="text-neon/90">{EVENT.author}</span>
+            </span>
+            <TipJar />
+          </div>
           <ul className="mt-4 space-y-1 text-[11px] leading-5 text-slate-600">
             {DISCLAIMERS.map((d) => (
               <li key={d}>· {d}</li>
