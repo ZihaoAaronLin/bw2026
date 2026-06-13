@@ -129,12 +129,30 @@ export const CREW_STATS = {
   expectedUnique: 500,
 } as const;
 
-/** 7.11 当日流程（预，以当日群内通知为准） */
+/**
+ * 7.11 当日流程（预，以当日群内通知为准）
+ * 展示用「简化版」：按整点分 4 段，每段 detail 小字精确对齐 PDF 计划书流程图。
+ * 简化版只负责好看好记，精确时间以 detail / TIMELINE_DETAIL 为准。
+ */
 export const TIMELINE = [
-  { time: "14:00", label: "集合", desc: "3H 与 4.1H 集合点报到，时间掐死不等人" },
-  { time: "15:00", label: "整活", desc: "大型合影 / 签名画布 / 合唱彩排" },
-  { time: "16:00", label: "游场", desc: "A / B 两组分流游场，中央会合大合唱" },
-  { time: "18:00", label: "聚餐", desc: "场外聚餐，AA 制现场结算" },
+  { time: "14:00", label: "集合 · 整活", desc: "3H 与 4.1H 报到，时间掐死不等人", detail: "14:00 集合 · 整活" },
+  { time: "15:00", label: "小合照 · 游场", desc: "各单团小合照后分流游场", detail: "15:00 四单团小合照 · 15:30 大型游场" },
+  { time: "16:00", label: "大合照 · 合唱", desc: "四团齐聚，中央 IP 串烧大合唱", detail: "16:00 总剧组大合照 · 16:30 中央大合唱（《日不落》收尾）" },
+  { time: "18:00", label: "聚餐 · KTV", desc: "AA 制聚餐，夜场 KTV", detail: "18:00 聚餐 · 20:00 KTV（限 18+）" },
+] as const;
+
+/**
+ * PDF 计划书原始流程（7 档，精确到分钟）——喂给 AI 参谋和快捷问答，保证回答精确。
+ * 与上面 TIMELINE 描述同一套流程，改任一处都要同步另一处。
+ */
+export const TIMELINE_DETAIL = [
+  { time: "14:00", label: "集合 · 整活" },
+  { time: "15:00", label: "四单团小合照" },
+  { time: "15:30", label: "大型游场" },
+  { time: "16:00", label: "总剧组大合照" },
+  { time: "16:30", label: "中央大合唱" },
+  { time: "18:00", label: "聚餐" },
+  { time: "20:00", label: "KTV（限 18+）" },
 ] as const;
 
 export const FINALE_SONG = "日不落";
@@ -238,7 +256,7 @@ export const PLAYLIST: Track[] = [
 export const QUICK_QA: { q: string; a: string }[] = [
   {
     q: "几点在哪集合？",
-    a: `7 月 11 日 14:00 集合，地点暂定 ${EVENT.rally}。\n时间轴（预）：14:00 集合 → 15:00 整活 → 16:00 游场 → 18:00 聚餐。\n注意：时间掐死，不会等待个别人员！`,
+    a: `7 月 11 日 14:00 集合，地点暂定 ${EVENT.rally}。\n当日流程（预）：${TIMELINE_DETAIL.map((t) => `${t.time} ${t.label}`).join(" → ")}。\n注意：时间掐死，不会等待个别人员！`,
   },
   {
     q: "怎么进群？",
@@ -270,7 +288,7 @@ export function buildIntelDossier(): string {
     `7 月 11 日，场内集合地点 ${EVENT.rally}。同期 ${EVENT.bml}。`,
     `团长：${EVENT.organizers.join("、")}；协助：${EVENT.assistant}。`,
     `票务：${TICKETS.prices.map((p) => `${p.name}${p.price}元`).join("/")}。开票：${TICKETS.rounds.map((r) => `${r.name} ${r.time}`).join("；")}。规则：${TICKETS.rules.join("；")}。`,
-    `时间轴（预）：${TIMELINE.map((t) => `${t.time} ${t.label}（${t.desc}）`).join("；")}。`,
+    `当日流程（预，精确）：${TIMELINE_DETAIL.map((t) => `${t.time} ${t.label}`).join("；")}。`,
     `阵营：${FACTIONS.map((f) => `${f.name}[${f.group}组]，口号「${f.slogan}」，合唱曲《${f.song}》，团长 ${f.leader.cn}（QQ ${f.leader.qq}）`).join("；")}。`,
     `游场：3H 分流，A组（崩三&星铁）往 4.1H/5.1H 经 6.1H、7.1H 过道会合；B组（原神&绝区零）往 2.1H/1.1H 经 8.1H 过道会合。合唱串烧最后以《${FINALE_SONG}》收尾。`,
     `QQ群（一开后开放）：${QQ_GROUPS.map((g) => `${g.name} ${g.id}`).join("；")}。${NICKNAME_RULE}。`,

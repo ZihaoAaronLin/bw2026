@@ -123,6 +123,9 @@ export default function IntelBrief() {
                 <span className="ml-3 text-base text-slate-100">{t.label}</span>
               </p>
               <p className="text-xs leading-5 text-slate-400">{t.desc}</p>
+              <p className="mt-0.5 font-mono text-[10px] leading-4 tracking-wider text-neon/45">
+                {t.detail}
+              </p>
             </motion.li>
           ))}
         </ol>
