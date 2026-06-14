@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
-import { ANNOUNCEMENT, DISCLAIMERS, EVENT, type Faction } from "@/data/event";
+import { ANNOUNCEMENT, DISCLAIMERS, EVENT, FACTIONS, type Faction } from "@/data/event";
 import { needReconfirm } from "@/lib/visit";
 import AiChat from "@/components/AiChat";
 import AnnouncementModal from "@/components/AnnouncementModal";
@@ -33,7 +33,8 @@ export default function Home() {
   }, []);
 
   // 注水：生存红线确认在 3 次访问 / 15 分钟内则跳过强制门，否则重弹并清空旧勾选。
-  // 阵营选择不再持久化——每次刷新都重置（用户偏好）。
+  // 阵营选择走会话级（sessionStorage）：本次访问内记得（海报↔雷达联动稳），
+  // 关标签页即忘，不会跨天还记着上次选的。
   useEffect(() => {
     try {
       if (needReconfirm("bw-survival-done-at")) {
@@ -41,10 +42,25 @@ export default function Home() {
       } else {
         setSurvival("done");
       }
+      const fid = sessionStorage.getItem("bw-faction");
+      if (fid) {
+        const f = FACTIONS.find((x) => x.id === fid);
+        if (f) setFaction(f);
+      }
     } catch {
       /* 隐私模式静默降级 */
     }
   }, []);
+
+  // 阵营选择：仅本次会话持久化
+  const selectFaction = (f: Faction) => {
+    setFaction(f);
+    try {
+      sessionStorage.setItem("bw-faction", f.id);
+    } catch {
+      /* 隐私模式静默降级 */
+    }
+  };
 
   // 开机后：有未读版本的群公告则强制弹出
   useEffect(() => {
@@ -104,7 +120,7 @@ export default function Home() {
         <Hero />
         <IntelBrief />
         <TerminalUnlock />
-        <PosterGenerator faction={faction} onSelect={setFaction} />
+        <PosterGenerator faction={faction} onSelect={selectFaction} />
         <RadarMap faction={faction} />
         <FieldIntel />
         <Gallery />
