@@ -215,7 +215,7 @@ export const TIMELINE = [
   { time: "14:00", label: "集合 · 整活", desc: "3H 与 4.1H 报到，时间掐死不等人", detail: "14:00 集合 · 整活" },
   { time: "15:00", label: "小合照 · 游场", desc: "各单团小合照后分流游场", detail: "15:00 四单团小合照 · 15:30 大型游场" },
   { time: "16:00", label: "大合照 · 合唱", desc: "四团齐聚，中央 IP 串烧大合唱", detail: "16:00 总剧组大合照 · 16:30 中央大合唱（《日不落》收尾）" },
-  { time: "18:00", label: "聚餐 · KTV", desc: "AA 制聚餐，夜场 KTV", detail: "18:00 聚餐 · 20:00 KTV（限 18+）" },
+  { time: "17:40", label: "聚餐 · KTV", desc: "AA 制聚餐，夜场 KTV", detail: "17:40 聚餐 · 20:00 KTV（限 18+）" },
 ] as const;
 
 /**
@@ -228,7 +228,7 @@ export const TIMELINE_DETAIL = [
   { time: "15:30", label: "大型游场" },
   { time: "16:00", label: "总剧组大合照" },
   { time: "16:30", label: "中央大合唱" },
-  { time: "18:00", label: "聚餐" },
+  { time: "17:40", label: "聚餐" },
   { time: "20:00", label: "KTV（限 18+）" },
 ] as const;
 
@@ -272,7 +272,7 @@ export const SUPPLIES_NOTE =
   "团长处备有免费应急物资：无料小礼品、医用品、透明肩带、防走光贴、一次性拖鞋、一字夹、创可贴、藿香正气水。需要请直接联系，均不收费。";
 
 export const DINNER = {
-  time: "18:00 开始",
+  time: "17:40 开始",
   rules: [
     "聚餐限制角色：可能禁止其他厂家 IP 角色，便装可忽视限制，具体以团长通知为准",
     "聚餐限 14 周岁及以上，KTV 限 18 周岁及以上",
