@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { ANNOUNCEMENT, DISCLAIMERS, EVENT, FACTIONS, type Faction } from "@/data/event";
-import { needReconfirm } from "@/lib/visit";
+import { markConfirmed, needReconfirm } from "@/lib/visit";
 import AiChat from "@/components/AiChat";
 import AnnouncementModal from "@/components/AnnouncementModal";
 import BootOverlay from "@/components/BootOverlay";
@@ -62,12 +62,14 @@ export default function Home() {
     }
   };
 
-  // 开机后：有未读版本的群公告则强制弹出
+  // 开机后弹群公告：有未读新版本、或距上次已读满 3 次访问 / 15 分钟，都重弹
   useEffect(() => {
     if (!booted) return;
     try {
       const seen = Number(localStorage.getItem("bw-announce-seen") ?? "0") || 0;
-      if (seen < ANNOUNCEMENT.version) setAnnounce(true);
+      if (seen < ANNOUNCEMENT.version || needReconfirm("bw-announce-at")) {
+        setAnnounce(true);
+      }
     } catch {
       setAnnounce(true);
     }
@@ -80,6 +82,7 @@ export default function Home() {
     } catch {
       /* 静默降级 */
     }
+    markConfirmed("bw-announce-at"); // 记录已读时刻，供 3 次/15 分钟重弹判断
   };
 
   // 开机前锁滚动
