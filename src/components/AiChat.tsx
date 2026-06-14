@@ -45,15 +45,23 @@ export default function AiChat() {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
   }, [msgs, open]);
 
-  // 新访客引导气泡：没开过聊天就在 bot 上方冒个提示，延迟 2.5s 出现
+  // 新访客引导气泡：没开过聊天的人，滚过首屏后再在 bot 上方冒提示（勿改回定时器，见下注）。
+  // 首屏只留小红书气泡，等用户往下滚（已离开 Hero、生存弹窗也已确认）才招呼，
+  // 两个引导天然错开、不再互相遮挡。
   useEffect(() => {
     try {
       if (localStorage.getItem("bw-chat-opened-ever")) return;
     } catch {
-      /* 隐私模式：照常显示 */
+      /* 隐私模式：照常往下走 */
     }
-    const t = setTimeout(() => setShowHint(true), 2500);
-    return () => clearTimeout(t);
+    const onScroll = () => {
+      if (window.scrollY > window.innerHeight * 0.9) {
+        setShowHint(true);
+        window.removeEventListener("scroll", onScroll);
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   const openChat = () => {
