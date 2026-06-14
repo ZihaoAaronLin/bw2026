@@ -34,7 +34,7 @@ export const ANNOUNCEMENT = {
   version: 1,
   tag: "群公告 · 更新",
   title: "BW 核心抢票策略",
-  intro: "6.21 开票在即，团长划重点，照着冲！",
+  intro: "开票时间待官宣，抢票策略先收好，到点照着冲！",
   sections: [
     { h: "设备组合", items: ["平板分屏支付是王道", "手机安卓优先", "电脑多开作为补充"] },
     { h: "网络为王", items: ["5G ＞ 高速 Wi-Fi ＞ 4G", "抢票前务必测速"] },
@@ -96,13 +96,16 @@ export const TIP = {
 } as const;
 
 export const TICKETS = {
-  /** 开票时间 */
-  saleStart: "2026-06-21T12:00:00+08:00",
-  rounds: [
-    { name: "一开 · 大会员", time: "6.21 12:00" },
-    { name: "一开 · 会员", time: "6.21 18:00" },
-    { name: "二开 · 会员", time: "6.28 18:00" },
-  ],
+  /**
+   * 开票时间：BW 一开 / 二开官方【尚未公布】。
+   * ⚠️ 6.21 是 BML（BiliBili Macro Link 音乐会）的开票时间，不是 BW，别再填错。
+   * 官宣后：把 ISO 时间串填回 saleStart（如 "2026-07-01T12:00:00+08:00"）→ 自动恢复倒计时；
+   * 同时把各轮次填进 rounds（如 { name: "一开 · 大会员", time: "x.xx 12:00" }）。
+   * 留空（saleStart "" + rounds []）= 前台显示「待定」。
+   */
+  saleStart: "" as string,
+  saleNote: "BW 一开 / 二开开票时间官方尚未公布，盯紧 B 站会员购，别错过。",
+  rounds: [] as { name: string; time: string }[],
   prices: [
     { name: "游园票", price: 128 },
     { name: "IP 典藏票", price: 328 },
@@ -395,11 +398,11 @@ export const QUICK_QA: { q: string; a: string }[] = [
   },
   {
     q: "怎么进群？",
-    a: `QQ 群于一开（6.21）之后开放：\n${NICKNAME_RULE}`,
+    a: `QQ 群于一开之后开放（一开时间官方尚未公布，待官宣）：\n${NICKNAME_RULE}`,
   },
   {
     q: "票价和开票时间？",
-    a: "游园票 128 / IP典藏票 328 / VIP 558。\n一开：6.21 大会员 12:00、会员 18:00；二开：6.28 18:00。\n单 UID 限购 4 张，实名绑定；14 岁以下不可入场，14-18 岁需回传承诺书。",
+    a: "游园票 128 / IP典藏票 328 / VIP 558（价格以官方为准）。\n开票时间：BW 一开 / 二开官方尚未公布，待官宣（注意 6.21 是 BML 音乐会的开票时间，不是 BW）。\n单 UID 限购 4 张，实名绑定；14 岁以下不可入场，14-18 岁需回传承诺书。",
   },
   {
     q: "聚餐有什么规矩？",
@@ -422,7 +425,7 @@ export function buildIntelDossier(): string {
     `活动：${EVENT.name}，${EVENT.dateRange}，地点 ${EVENT.venue}（${EVENT.venueAddress}），${EVENT.metro}。`,
     `7 月 11 日，场内集合地点 ${EVENT.rally}。同期 ${EVENT.bml}。`,
     `团长：${EVENT.organizers.join("、")}；协助：${EVENT.assistant}。`,
-    `票务：${TICKETS.prices.map((p) => `${p.name}${p.price}元`).join("/")}。开票：${TICKETS.rounds.map((r) => `${r.name} ${r.time}`).join("；")}。规则：${TICKETS.rules.join("；")}。`,
+    `票务：${TICKETS.prices.map((p) => `${p.name}${p.price}元`).join("/")}（价格以官方为准）。开票：${TICKETS.rounds.length ? TICKETS.rounds.map((r) => `${r.name} ${r.time}`).join("；") : "BW 一开/二开时间官方尚未公布，待官宣；注意 6.21 是 BML 音乐会的开票时间，不是 BW，不要把两者混淆"}。规则：${TICKETS.rules.join("；")}。`,
     `当日流程（预，精确）：${TIMELINE_DETAIL.map((t) => `${t.time} ${t.label}`).join("；")}。`,
     `阵营：${FACTIONS.map((f) => `${f.name}[${f.group}组]，口号「${f.slogan}」，合唱曲《${f.song}》，团长 ${f.leader.cn}（QQ ${f.leader.qq}）`).join("；")}。`,
     `游场：3H 分流，A组（崩三&星铁）往 4.1H/5.1H 经 6.1H、7.1H 过道会合；B组（原神&绝区零）往 2.1H/1.1H 经 8.1H 过道会合。合唱串烧最后以《${FINALE_SONG}》收尾。`,

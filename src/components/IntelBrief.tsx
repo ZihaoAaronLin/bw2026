@@ -15,6 +15,7 @@ import SectionHeader from "./SectionHeader";
 function useCountdown(target: string) {
   const [left, setLeft] = useState<number | null>(null);
   useEffect(() => {
+    if (!target) return; // 待定（无目标时间）：不起定时器
     const t = new Date(target).getTime();
     const tick = () => setLeft(Math.max(0, t - Date.now()));
     tick();
@@ -34,14 +35,18 @@ function CountdownCard({
   target,
   accent,
   expiredLabel,
+  tbdLabel,
 }: {
   label: string;
   target: string;
   accent: string;
   /** 倒计时归零后展示的文案，避免永远停在 0 */
   expiredLabel: string;
+  /** 目标时间未定（target 为空）时展示的文案，如「待官宣」 */
+  tbdLabel?: string;
 }) {
   const c = useCountdown(target);
+  const tbd = !target;
   return (
     <div
       className="neon-frame clip-corner flex-1 border bg-slate-900/85 p-4"
@@ -49,7 +54,9 @@ function CountdownCard({
     >
       <p className="font-mono text-[10px] tracking-[0.3em] text-slate-400">{label}</p>
       <div className="mt-2 flex items-baseline gap-1 font-mono" style={{ color: accent }}>
-        {c === null ? (
+        {tbd ? (
+          <span className="text-2xl font-black md:text-3xl">{tbdLabel ?? "待定"}</span>
+        ) : c === null ? (
           <span className="text-2xl font-black">--:--:--</span>
         ) : c.done ? (
           <span className="text-2xl font-black md:text-3xl">{expiredLabel}</span>
@@ -84,7 +91,7 @@ export default function IntelBrief() {
 
       {/* 双倒计时 */}
       <motion.div {...fadeUp} className="flex flex-col gap-3 md:flex-row">
-        <CountdownCard label="距 6.21 开票 // TICKET DROP" target={TICKETS.saleStart} accent="#f4a623" expiredLabel="已开票 · 速抢！" />
+        <CountdownCard label="开票 // TICKET DROP" target={TICKETS.saleStart} accent="#f4a623" expiredLabel="已开票 · 速抢！" tbdLabel="待官宣" />
         <CountdownCard label="距 7.11 开场 // OPENING DAY" target={EVENT.dDay} accent="#ff003c" expiredLabel="活动进行中！" />
       </motion.div>
 
@@ -156,16 +163,22 @@ export default function IntelBrief() {
             </div>
           ))}
         </div>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {TICKETS.rounds.map((r) => (
-            <span
-              key={r.name}
-              className="border border-slate-700 bg-slate-900/80 px-2.5 py-1 font-mono text-[11px] text-slate-300"
-            >
-              {r.name} · {r.time}
-            </span>
-          ))}
-        </div>
+        {TICKETS.rounds.length > 0 ? (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {TICKETS.rounds.map((r) => (
+              <span
+                key={r.name}
+                className="border border-slate-700 bg-slate-900/80 px-2.5 py-1 font-mono text-[11px] text-slate-300"
+              >
+                {r.name} · {r.time}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <p className="clip-corner-sm mt-3 border border-gold/40 bg-gold/5 px-3 py-2 text-[12px] leading-5 text-gold/90">
+            ⏳ {TICKETS.saleNote}
+          </p>
+        )}
         <ul className="mt-3 space-y-1 text-[11px] leading-5 text-slate-500">
           {TICKETS.rules.map((r) => (
             <li key={r}>· {r}</li>
