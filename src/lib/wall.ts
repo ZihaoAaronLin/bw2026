@@ -4,8 +4,11 @@
  * 前端切到「本地氛围版」（只飘自己的 + 预设泡泡），功能不崩。
  */
 
-const REST_URL = process.env.UPSTASH_REDIS_REST_URL;
-const REST_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+// 兼容两种注入：Upstash 原生集成（UPSTASH_*）和 Vercel KV（KV_*）
+const REST_URL =
+  process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
+const REST_TOKEN =
+  process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
 
 export const wallConfigured = Boolean(REST_URL && REST_TOKEN);
 
