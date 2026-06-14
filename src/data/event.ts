@@ -84,7 +84,7 @@ export const ANNOUNCEMENT = {
  * 想重新开启：把 closed 改为 false，并把真实收款码放进 public/tip/ 替换占位图。
  */
 export const TIP = {
-  closed: true,
+  closed: false,
   closedMsg:
     "本月的服务器费用（或咖啡配额）已达标！感谢各位金主的支持，打赏通道暂且关闭。\n\n大家赚钱都不容易，先把钱留着给自己加个鸡腿吧。如果你觉得我的内容对你有帮助，不妨把这份心意捐给红十字会，或者在应援墙留下一句鼓励即可。",
   note: "网站是用爱发电的副产品，喜欢的话可以投喂一杯快乐水～ 全凭自愿，不投也照样能用全部功能！",
