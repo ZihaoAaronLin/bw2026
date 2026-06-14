@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Check, ShieldAlert, Square, SquareCheckBig } from "lucide-react";
 import { SUPPLIES_NOTE, SURVIVAL } from "@/data/event";
 import { usePersistentState } from "@/lib/usePersistentState";
-import { currentVisit } from "@/lib/visit";
+import { markConfirmed } from "@/lib/visit";
 
 /** 生存红线确认：全部勾选前不放行（红 → 绿）；勾选状态持久化，出行前可反复核对 */
 export default function SurvivalModal({ onConfirm }: { onConfirm: () => void }) {
@@ -101,12 +101,8 @@ export default function SurvivalModal({ onConfirm }: { onConfirm: () => void }) 
         <button
           disabled={!allChecked}
           onClick={() => {
-            try {
-              // 记录「在第几次访问确认」，满 5 次访问后会再次强制重勾
-              localStorage.setItem("bw-survival-done-at", String(currentVisit()));
-            } catch {
-              /* 隐私模式静默降级 */
-            }
+            // 记录确认（访问号 + 时刻）：满 3 次访问或 15 分钟后会再次强制重勾
+            markConfirmed("bw-survival-done-at");
             onConfirm();
           }}
           className={`clip-corner-sm mt-5 flex w-full items-center justify-center gap-2 py-3.5 font-mono text-sm font-bold tracking-[0.25em] transition-colors duration-300 ${

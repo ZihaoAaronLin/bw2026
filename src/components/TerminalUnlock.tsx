@@ -24,7 +24,7 @@ import {
 } from "@/data/event";
 import SectionHeader from "./SectionHeader";
 import { usePersistentState } from "@/lib/usePersistentState";
-import { currentVisit, needReconfirm } from "@/lib/visit";
+import { markConfirmed, needReconfirm } from "@/lib/visit";
 
 const DECRYPT_LINES = [
   "> AUTH_REQUEST :: 4/4 PROTOCOLS ACCEPTED",
@@ -131,12 +131,8 @@ export default function TerminalUnlock() {
       if (i >= DECRYPT_LINES.length) {
         clearInterval(id);
         setTimeout(() => {
-          // 仅在用户真正完成解码时记录访问号（注水恢复不写，避免周期被重置）
-          try {
-            localStorage.setItem("bw-terminal-unlocked-at", String(currentVisit()));
-          } catch {
-            /* 隐私模式静默降级 */
-          }
+          // 仅在用户真正完成解码时记录（注水恢复不写，避免周期被重置）
+          markConfirmed("bw-terminal-unlocked-at");
           setPhase("open");
         }, 500);
       }

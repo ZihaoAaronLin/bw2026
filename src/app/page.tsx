@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
-import { DISCLAIMERS, EVENT, FACTIONS, type Faction } from "@/data/event";
+import { ANNOUNCEMENT, DISCLAIMERS, EVENT, type Faction } from "@/data/event";
 import { needReconfirm } from "@/lib/visit";
 import AiChat from "@/components/AiChat";
+import AnnouncementModal from "@/components/AnnouncementModal";
 import BootOverlay from "@/components/BootOverlay";
 import FieldIntel from "@/components/FieldIntel";
 import Gallery from "@/components/Gallery";
@@ -17,11 +18,13 @@ import SurvivalModal from "@/components/SurvivalModal";
 import TerminalUnlock from "@/components/TerminalUnlock";
 import TipJar from "@/components/TipJar";
 import WallSay from "@/components/WallSay";
+import XhsLink from "@/components/XhsLink";
 
 export default function Home() {
   const [booted, setBooted] = useState(false);
   const [faction, setFaction] = useState<Faction | null>(null);
   const [survival, setSurvival] = useState<"pending" | "open" | "done">("pending");
+  const [announce, setAnnounce] = useState(false);
 
   // 仪式感优先：每次进站都从开机画面开始，不恢复上次滚动位置
   useEffect(() => {
@@ -29,8 +32,8 @@ export default function Home() {
     window.scrollTo(0, 0);
   }, []);
 
-  // 注水持久化状态：生存红线确认在 5 次访问内则跳过强制门，否则重弹并清空旧勾选；
-  // 恢复上次选择的阵营
+  // 注水：生存红线确认在 3 次访问 / 15 分钟内则跳过强制门，否则重弹并清空旧勾选。
+  // 阵营选择不再持久化——每次刷新都重置（用户偏好）。
   useEffect(() => {
     try {
       if (needReconfirm("bw-survival-done-at")) {
@@ -38,23 +41,28 @@ export default function Home() {
       } else {
         setSurvival("done");
       }
-      const fid = localStorage.getItem("bw-faction");
-      if (fid) {
-        const f = FACTIONS.find((x) => x.id === fid);
-        if (f) setFaction(f);
-      }
     } catch {
       /* 隐私模式静默降级 */
     }
   }, []);
 
-  // 阵营选择持久化
-  const selectFaction = (f: Faction) => {
-    setFaction(f);
+  // 开机后：有未读版本的群公告则强制弹出
+  useEffect(() => {
+    if (!booted) return;
     try {
-      localStorage.setItem("bw-faction", f.id);
+      const seen = Number(localStorage.getItem("bw-announce-seen") ?? "0") || 0;
+      if (seen < ANNOUNCEMENT.version) setAnnounce(true);
     } catch {
-      /* 同上 */
+      setAnnounce(true);
+    }
+  }, [booted]);
+
+  const closeAnnounce = () => {
+    setAnnounce(false);
+    try {
+      localStorage.setItem("bw-announce-seen", String(ANNOUNCEMENT.version));
+    } catch {
+      /* 静默降级 */
     }
   };
 
@@ -83,6 +91,10 @@ export default function Home() {
       </AnimatePresence>
 
       <AnimatePresence>
+        {announce && <AnnouncementModal onClose={closeAnnounce} />}
+      </AnimatePresence>
+
+      <AnimatePresence>
         {survival === "open" && (
           <SurvivalModal onConfirm={() => setSurvival("done")} />
         )}
@@ -92,7 +104,7 @@ export default function Home() {
         <Hero />
         <IntelBrief />
         <TerminalUnlock />
-        <PosterGenerator faction={faction} onSelect={selectFaction} />
+        <PosterGenerator faction={faction} onSelect={setFaction} />
         <RadarMap faction={faction} />
         <FieldIntel />
         <Gallery />
@@ -111,6 +123,7 @@ export default function Home() {
             <span className="font-mono text-xs tracking-wider text-slate-400">
               本站设计 · 制作 <span className="text-neon/90">{EVENT.author}</span>
             </span>
+            <XhsLink />
             <TipJar />
           </div>
           <ul className="mt-4 space-y-1 text-[11px] leading-5 text-slate-600">

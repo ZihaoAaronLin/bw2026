@@ -20,15 +20,32 @@ export function currentVisit(): number {
   return cached;
 }
 
-/** 距上次确认满这么多次访问，就强制重新勾选 */
-export const FORCE_EVERY = 5;
+/** 满这么多次访问就强制重新勾选 */
+export const FORCE_EVERY = 3;
+/** 距上次确认超过这么久也强制重新勾选（15 分钟） */
+export const FORCE_AFTER_MS = 15 * 60 * 1000;
 
-/** 上次确认在第几次访问；满 FORCE_EVERY 次则需重勾 */
-export function needReconfirm(doneAtKey: string): boolean {
+const timeKey = (atKey: string) => atKey.replace(/-at$/, "-time");
+
+/** 记录「在第几次访问 / 什么时刻」确认的，供 needReconfirm 判断 */
+export function markConfirmed(atKey: string): void {
   try {
-    const doneAt = Number(localStorage.getItem(doneAtKey) ?? "0") || 0;
-    if (!doneAt) return true; // 从没确认过
-    return currentVisit() - doneAt >= FORCE_EVERY;
+    localStorage.setItem(atKey, String(currentVisit()));
+    localStorage.setItem(timeKey(atKey), String(Date.now()));
+  } catch {
+    /* 隐私模式静默降级 */
+  }
+}
+
+/** 需要重新强制勾选吗：满 FORCE_EVERY 次访问、或距上次确认满 FORCE_AFTER_MS，任一即触发 */
+export function needReconfirm(atKey: string): boolean {
+  try {
+    const at = Number(localStorage.getItem(atKey) ?? "0") || 0;
+    if (!at) return true; // 从没确认过
+    if (currentVisit() - at >= FORCE_EVERY) return true; // 次数到了
+    const t = Number(localStorage.getItem(timeKey(atKey)) ?? "0") || 0;
+    if (!t || Date.now() - t >= FORCE_AFTER_MS) return true; // 时间到了
+    return false;
   } catch {
     return true;
   }

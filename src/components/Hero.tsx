@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { ChevronDown, MapPin, Zap } from "lucide-react";
 import { EVENT, FACTIONS } from "@/data/event";
+import XhsLink from "./XhsLink";
 
 export default function Hero() {
   return (
@@ -95,6 +96,15 @@ export default function Hero() {
       >
         本站设计 · 制作　<span className="text-neon/90">{EVENT.author}</span>
       </motion.p>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.1 }}
+        className="mt-3"
+      >
+        <XhsLink hint />
+      </motion.div>
 
       <a
         href="#intel"
