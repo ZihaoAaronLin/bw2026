@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  // OG/分享卡片图的绝对 URL 基准。绑定自定义域名后改成正式域名。
-  metadataBase: new URL("https://bw2026.vercel.app"),
+  // OG/分享卡片图的绝对 URL 基准 —— 正式域名（已绑定）
+  metadataBase: new URL("https://aaronlin.cn"),
   title: "BW 2026 Mihoyo 剧组 · 指北",
   description:
     "7.11 上海国家会展中心 | 崩坏三×原神×崩坏：星穹铁道×绝区零 — 集合时间、游场路线、聚餐情报、一键生成行动纲领",
