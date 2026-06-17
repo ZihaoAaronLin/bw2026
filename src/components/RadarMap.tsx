@@ -26,8 +26,8 @@ function pos(deg: number) {
 }
 
 const ROUTE_HALLS: Record<"A" | "B", string[]> = {
-  A: ["3H", "4.1H", "5.1H", "6.1H", "7.1H"],
-  B: ["3H", "2.1H", "1.1H", "8.1H"],
+  A: ["3H", "4.1H", "5.1H"],
+  B: ["4.1H", "3H", "2.1H"],
 };
 
 function routePath(group: "A" | "B") {
@@ -202,7 +202,7 @@ export default function RadarMap({ faction }: { faction: Faction | null }) {
                     {members.map((f) => f.name).join(" & ")}
                   </p>
                   <p className="text-slate-500">
-                    {g === "A" ? "3H → 4.1H → 5.1H → 6.1H/7.1H 过道 → 中央" : "3H → 2.1H → 1.1H → 8.1H 过道 → 中央"}
+                    {g === "A" ? "3H → 4.1H → 5.1H → 5.1H/6.1H 过道 → 中央" : "4.1H → 3H → 2.1H → 2.1H/1.1H 过道 → 中央"}
                   </p>
                 </div>
               </div>
@@ -210,7 +210,7 @@ export default function RadarMap({ faction }: { faction: Faction | null }) {
           })}
         </div>
         <p className="mt-3 text-center font-mono text-[10px] tracking-widest text-slate-600">
-          在 3H 馆分流 · 向中央会合大合唱 · 馆位为四叶草环形示意，非精确比例
+          在 3H / 4.1H 馆分流 · 向中央会合大合唱 · 馆位为四叶草环形示意，非精确比例
         </p>
       </div>
     </section>

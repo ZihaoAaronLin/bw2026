@@ -31,10 +31,10 @@ export const EVENT = {
  * sections = 标题 + 要点列表；warnings = 高亮的重要提醒。
  */
 export const ANNOUNCEMENT = {
-  version: 1,
+  version: 2,
   tag: "群公告 · 更新",
   title: "BW 核心抢票策略",
-  intro: "开票时间待官宣，抢票策略先收好，到点照着冲！",
+  intro: "6.20 开票：大会员 12:00、一开 18:00。团长划重点，照着冲！",
   sections: [
     { h: "设备组合", items: ["平板分屏支付是王道", "手机安卓优先", "电脑多开作为补充"] },
     { h: "网络为王", items: ["5G ＞ 高速 Wi-Fi ＞ 4G", "抢票前务必测速"] },
@@ -97,15 +97,17 @@ export const TIP = {
 
 export const TICKETS = {
   /**
-   * 开票时间：BW 一开 / 二开官方【尚未公布】。
-   * ⚠️ 6.21 是 BML（BiliBili Macro Link 音乐会）的开票时间，不是 BW，别再填错。
-   * 官宣后：把 ISO 时间串填回 saleStart（如 "2026-07-01T12:00:00+08:00"）→ 自动恢复倒计时；
-   * 同时把各轮次填进 rounds（如 { name: "一开 · 大会员", time: "x.xx 12:00" }）。
-   * 留空（saleStart "" + rounds []）= 前台显示「待定」。
+   * 开票时间（官方已公布）：大会员先购 6.20 12:00、一开 6.20 18:00；二开时间待官宣。
+   * ⚠️ 注意 6.21 是 BML（BiliBili Macro Link 音乐会）的开票时间，不是 BW，别混。
+   * saleStart 指向最早开抢时刻（大会员 6.20 12:00），驱动核心情报倒计时。
+   * 二开官宣后，往 rounds 里再追加一条即可；留空 saleStart "" + rounds [] 则前台显示「待定」。
    */
-  saleStart: "" as string,
-  saleNote: "BW 一开 / 二开开票时间官方尚未公布，盯紧 B 站会员购，别错过。",
-  rounds: [] as { name: string; time: string }[],
+  saleStart: "2026-06-20T12:00:00+08:00" as string,
+  saleNote: "BW 二开时间官方尚未公布，盯紧 B 站会员购。",
+  rounds: [
+    { name: "大会员先购", time: "6.20 12:00" },
+    { name: "一开", time: "6.20 18:00" },
+  ] as { name: string; time: string }[],
   prices: [
     { name: "游园票", price: 128 },
     { name: "IP 典藏票", price: 328 },
@@ -147,7 +149,7 @@ export const FACTIONS: Faction[] = [
     slogan: "为世界上所有的美好而战！",
     song: "妖精小姐的魔法邀约",
     group: "A",
-    route: ["3H 集合分流", "4.1H", "5.1H", "6.1H / 7.1H 过道", "中央会合"],
+    route: ["3H 集合分流", "4.1H", "5.1H", "5.1H / 6.1H 过道", "中央会合"],
     routeNote: "A 组 · 与星穹铁道同行",
     color: "#b5179e",
     colorDim: "#3d0a36",
@@ -161,7 +163,7 @@ export const FACTIONS: Faction[] = [
     slogan: "向着星辰与深渊，想锤天理每一天！",
     song: "提瓦特民谣",
     group: "B",
-    route: ["3H 集合分流", "2.1H", "1.1H", "8.1H 过道", "中央会合"],
+    route: ["4.1H 集合分流", "3H", "2.1H", "2.1H / 1.1H 过道", "中央会合"],
     routeNote: "B 组 · 与绝区零同行",
     color: "#f4a623",
     colorDim: "#3d2a06",
@@ -175,7 +177,7 @@ export const FACTIONS: Faction[] = [
     slogan: "愿此行，终抵群星！",
     song: "不眠之夜",
     group: "A",
-    route: ["3H 集合分流", "4.1H", "5.1H", "6.1H / 7.1H 过道", "中央会合"],
+    route: ["3H 集合分流", "4.1H", "5.1H", "5.1H / 6.1H 过道", "中央会合"],
     routeNote: "A 组 · 与崩坏三同行",
     color: "#00f5d4",
     colorDim: "#013d35",
@@ -189,7 +191,7 @@ export const FACTIONS: Faction[] = [
     slogan: "新艾利都永不落幕！",
     song: "原色",
     group: "B",
-    route: ["3H 集合分流", "2.1H", "1.1H", "8.1H 过道", "中央会合"],
+    route: ["4.1H 集合分流", "3H", "2.1H", "2.1H / 1.1H 过道", "中央会合"],
     routeNote: "B 组 · 与原神同行",
     color: "#c8ff00",
     colorDim: "#2e3d01",
@@ -398,11 +400,11 @@ export const QUICK_QA: { q: string; a: string }[] = [
   },
   {
     q: "怎么进群？",
-    a: `QQ 群于一开之后开放（一开时间官方尚未公布，待官宣）：\n${NICKNAME_RULE}`,
+    a: `QQ 群于一开（6.20 18:00）之后开放：\n${NICKNAME_RULE}`,
   },
   {
     q: "票价和开票时间？",
-    a: "游园票 128 / IP典藏票 328 / VIP 558（价格以官方为准）。\n开票时间：BW 一开 / 二开官方尚未公布，待官宣（注意 6.21 是 BML 音乐会的开票时间，不是 BW）。\n单 UID 限购 4 张，实名绑定；14 岁以下不可入场，14-18 岁需回传承诺书。",
+    a: "游园票 128 / IP典藏票 328 / VIP 558（价格以官方为准）。\n开票：大会员先购 6.20 12:00、一开 6.20 18:00；二开时间待官宣（注意 6.21 是 BML 音乐会的，不是 BW）。\n单 UID 限购 4 张，实名绑定；14 岁以下不可入场，14-18 岁需回传承诺书。",
   },
   {
     q: "聚餐有什么规矩？",
@@ -414,7 +416,7 @@ export const QUICK_QA: { q: string; a: string }[] = [
   },
   {
     q: "我的阵营走哪条路线？",
-    a: "在 3H 馆分流：\n· A 组（崩坏三 & 星穹铁道）→ 4.1H、5.1H，经 6.1H/7.1H 过道向中央会合\n· B 组（原神 & 绝区零）→ 2.1H、1.1H，经 8.1H 过道向中央会合\n详见下方「动态雷达地图」，选择你的阵营即可点亮路线。",
+    a: "A 组在 3H 馆、B 组在 4.1H 馆分流：\n· A 组（崩坏三 & 星穹铁道）3H → 4.1H → 5.1H，经 5.1H/6.1H 过道向中央会合\n· B 组（原神 & 绝区零）4.1H → 3H → 2.1H，经 2.1H/1.1H 过道向中央会合\n详见下方「动态雷达地图」，选择你的阵营即可点亮路线。",
   },
 ];
 
@@ -428,7 +430,7 @@ export function buildIntelDossier(): string {
     `票务：${TICKETS.prices.map((p) => `${p.name}${p.price}元`).join("/")}（价格以官方为准）。开票：${TICKETS.rounds.length ? TICKETS.rounds.map((r) => `${r.name} ${r.time}`).join("；") : "BW 一开/二开时间官方尚未公布，待官宣；注意 6.21 是 BML 音乐会的开票时间，不是 BW，不要把两者混淆"}。规则：${TICKETS.rules.join("；")}。`,
     `当日流程（预，精确）：${TIMELINE_DETAIL.map((t) => `${t.time} ${t.label}`).join("；")}。`,
     `阵营：${FACTIONS.map((f) => `${f.name}[${f.group}组]，口号「${f.slogan}」，合唱曲《${f.song}》，团长 ${f.leader.cn}（QQ ${f.leader.qq}）`).join("；")}。`,
-    `游场：3H 分流，A组（崩三&星铁）往 4.1H/5.1H 经 6.1H、7.1H 过道会合；B组（原神&绝区零）往 2.1H/1.1H 经 8.1H 过道会合。合唱串烧最后以《${FINALE_SONG}》收尾。`,
+    `游场：A组在3H馆、B组在4.1H馆分流。A组（崩三&星铁）3H→4.1H→5.1H，经5.1H/6.1H过道向中央会合；B组（原神&绝区零）4.1H→3H→2.1H，经2.1H/1.1H过道向中央会合。合唱串烧最后以《${FINALE_SONG}》收尾。`,
     `QQ群（一开后开放）：${QQ_GROUPS.map((g) => `${g.name} ${g.id}`).join("；")}。${NICKNAME_RULE}。`,
     `聚餐：${DINNER.time}；${DINNER.rules.join("；")}。`,
     `入场协议：${PROTOCOLS.join("；")}。`,

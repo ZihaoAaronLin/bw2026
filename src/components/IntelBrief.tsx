@@ -91,7 +91,7 @@ export default function IntelBrief() {
 
       {/* 双倒计时 */}
       <motion.div {...fadeUp} className="flex flex-col gap-3 md:flex-row">
-        <CountdownCard label="开票 // TICKET DROP" target={TICKETS.saleStart} accent="#f4a623" expiredLabel="已开票 · 速抢！" tbdLabel="待官宣" />
+        <CountdownCard label="距 6.20 开票 // TICKET DROP" target={TICKETS.saleStart} accent="#f4a623" expiredLabel="已开票 · 速抢！" tbdLabel="待官宣" />
         <CountdownCard label="距 7.11 开场 // OPENING DAY" target={EVENT.dDay} accent="#ff003c" expiredLabel="活动进行中！" />
       </motion.div>
 
