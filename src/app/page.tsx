@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
-import { ANNOUNCEMENT, DISCLAIMERS, EVENT, FACTIONS, type Faction } from "@/data/event";
-import { markConfirmed, needReconfirm } from "@/lib/visit";
+import { DISCLAIMERS, EVENT, FACTIONS, type Faction } from "@/data/event";
+import { needReconfirm } from "@/lib/visit";
 import AiChat from "@/components/AiChat";
-import AnnouncementModal from "@/components/AnnouncementModal";
 import BootOverlay from "@/components/BootOverlay";
 import FieldIntel from "@/components/FieldIntel";
 import Gallery from "@/components/Gallery";
@@ -23,7 +22,6 @@ export default function Home() {
   const [booted, setBooted] = useState(false);
   const [faction, setFaction] = useState<Faction | null>(null);
   const [survival, setSurvival] = useState<"pending" | "open" | "done">("pending");
-  const [announce, setAnnounce] = useState(false);
 
   // 仪式感优先：每次进站都从开机画面开始，不恢复上次滚动位置
   useEffect(() => {
@@ -61,29 +59,6 @@ export default function Home() {
     }
   };
 
-  // 开机后弹群公告：有未读新版本、或距上次已读满 3 次访问 / 15 分钟，都重弹
-  useEffect(() => {
-    if (!booted) return;
-    try {
-      const seen = Number(localStorage.getItem("bw-announce-seen") ?? "0") || 0;
-      if (seen < ANNOUNCEMENT.version || needReconfirm("bw-announce-at")) {
-        setAnnounce(true);
-      }
-    } catch {
-      setAnnounce(true);
-    }
-  }, [booted]);
-
-  const closeAnnounce = () => {
-    setAnnounce(false);
-    try {
-      localStorage.setItem("bw-announce-seen", String(ANNOUNCEMENT.version));
-    } catch {
-      /* 静默降级 */
-    }
-    markConfirmed("bw-announce-at"); // 记录已读时刻，供 3 次/15 分钟重弹判断
-  };
-
   // 开机前锁滚动
   useEffect(() => {
     document.documentElement.style.overflow = booted ? "" : "hidden";
@@ -106,10 +81,6 @@ export default function Home() {
 
       <AnimatePresence>
         {!booted && <BootOverlay onDone={() => setBooted(true)} />}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {announce && <AnnouncementModal onClose={closeAnnounce} />}
       </AnimatePresence>
 
       <AnimatePresence>
