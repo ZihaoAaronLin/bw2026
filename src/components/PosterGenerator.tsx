@@ -127,10 +127,6 @@ function AgentCard({
           集合点：<b style={{ color: "#f8fafc" }}>{EVENT.rally}</b>
         </p>
         <p>
-          团长直通：<b style={{ color: "#f8fafc" }}>{faction.leader.cn}</b>
-          <span style={{ color: faction.color }}> QQ {faction.leader.qq}</span>
-        </p>
-        <p>
           合唱曲目：《{faction.song}》→ 终曲《{FINALE_SONG}》
         </p>
       </div>

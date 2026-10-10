@@ -82,15 +82,6 @@ export default function Hero() {
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.85 }}
-        className="mt-3 font-mono text-[11px] tracking-widest text-slate-600"
-      >
-        主团长：{EVENT.organizers.join(" · ")}
-      </motion.p>
-
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
         className="mt-5 font-mono text-[11px] tracking-[0.3em] text-slate-500"
       >

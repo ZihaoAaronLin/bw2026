@@ -135,9 +135,6 @@ export default function Home() {
           <p className="font-mono text-xs tracking-[0.3em] text-neon/60">
             BW2026 // MIHOYO CREW · TERMINAL
           </p>
-          <p className="mt-3 text-xs leading-6 text-slate-500">
-            主团长：{EVENT.organizers.join(" · ")}　协助：{EVENT.assistant}
-          </p>
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <span className="font-mono text-xs tracking-wider text-slate-400">
               本站设计 · 制作 <span className="text-neon/90">{EVENT.author}</span>

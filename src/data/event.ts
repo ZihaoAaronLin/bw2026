@@ -27,7 +27,6 @@ export const EVENT = {
   /** 场内预计集合地点（暂定） */
   rally: "3H 与 4.1H（暂定）",
   bml: "BiliBili Macro Link 音乐会 · 上海虹馆三楼 · 7.11–7.12",
-  organizers: ["瑾瑜"],
   credit: "网站所有者：瑾瑜",
   /** 网站作者（圈名/CN），用于扉页 & Hero 署名 */
   author: "瑾瑜",
@@ -143,7 +142,6 @@ export interface Faction {
   /** 游场路线（按行进顺序） */
   route: string[];
   routeNote: string;
-  leader: { cn: string; qq: string };
   /** 主题色（hex，导出海报安全） */
   color: string;
   colorDim: string;
@@ -247,17 +245,6 @@ export const TIMELINE_DETAIL = [
 export const FINALE_SONG = "日不落";
 export const CHORUS_NOTE =
   "各 IP 歌曲截取部分衔接串烧，最后以《日不落》收尾";
-
-/** 指挥链 */
-export const LEADERS = [
-  { role: "星穹铁道团", cn: "瑾瑜", qq: "" },
-] as const;
-
-/** 行动频道（一开后开放） */
-export const QQ_GROUPS = [
-] as const;
-
-export const NICKNAME_RULE = "进群请改昵称：cn+游戏+角色";
 
 export const DOCS = [
 ] as const;
@@ -398,7 +385,7 @@ export const PLAYLIST: Track[] = [
 export const QUICK_QA: { q: string; a: string }[] = [
   {
     q: "📖 这个网站怎么用？",
-    a: "欢迎接入！开机后会先弹「群公告」（抢票/活动重点，看完点「我知道了」）。然后从上往下逛：\n· 核心情报：开票/开场倒计时、集合时间地点、票价、当日流程\n· 终端授权：勾选入场协议，解锁 QQ 群号 / 拼房文档 / 团长联系方式\n· 行动纲领：选你的阵营，一键生成专属身份卡，可导出当锁屏\n· 雷达地图：看你阵营的游场路线\n· 落地情报：到场地铁口 / 打车下客点\n· 影像档案馆：往年返图横向相册\n· 应援墙：发条应援飘上墙；想给团长提建议或补交通经验，切到「建议·补充」（私发团长，不公开）\n· 页脚可投喂团长、关注作者小红书\n· 有任何问题，随时回来问我～",
+    a: "欢迎接入！开机后会先弹「群公告」（抢票/活动重点，看完点「我知道了」）。然后从上往下逛：\n· 核心情报：开票/开场倒计时、集合时间地点、票价、当日流程\n· 终端授权：勾选入场协议，解锁拼房文档 / 聚餐详情\n· 行动纲领：选你的阵营，一键生成专属身份卡，可导出当锁屏\n· 雷达地图：看你阵营的游场路线\n· 落地情报：到场地铁口 / 打车下客点\n· 影像档案馆：往年返图横向相册\n· 应援墙：发条应援飘上墙；想给团长提建议或补交通经验，切到「建议·补充」（私发团长，不公开）\n· 页脚可投喂团长、关注作者小红书\n· 有任何问题，随时回来问我～",
   },
   {
     q: "几点在哪集合？",
@@ -410,7 +397,9 @@ export const QUICK_QA: { q: string; a: string }[] = [
   },
   {
     q: "怎么进群？",
-    a: `QQ 群于一开（6.20 18:00）之后开放：\n${NICKNAME_RULE}`,
+    a: ARCHIVE_MODE
+      ? "活动已于 7.11 结束，剧组群已归档，不再开放加入。\n想了解这次活动，可以看页面上方的「数据回顾」，或者继续问我～"
+      : "QQ 群于一开（6.20 18:00）之后开放，群号由团长在群内统一发布。",
   },
   {
     q: "票价和开票时间？",
@@ -436,12 +425,10 @@ export function buildIntelDossier(): string {
     `# ${EVENT.name} ${EVENT.crew} 完整情报`,
     `活动：${EVENT.name}，${EVENT.dateRange}，地点 ${EVENT.venue}（${EVENT.venueAddress}），${EVENT.metro}。`,
     `7 月 11 日，场内集合地点 ${EVENT.rally}。同期 ${EVENT.bml}。`,
-    `团长：${EVENT.organizers.join("、")}；协助：${EVENT.assistant}。`,
     `票务：${TICKETS.prices.map((p) => `${p.name}${p.price}元`).join("/")}（价格以官方为准）。开票：${TICKETS.rounds.length ? TICKETS.rounds.map((r) => `${r.name} ${r.time}`).join("；") : "BW 一开/二开时间官方尚未公布，待官宣；注意 6.21 是 BML 音乐会的开票时间，不是 BW，不要把两者混淆"}。规则：${TICKETS.rules.join("；")}。`,
     `当日流程（预，精确）：${TIMELINE_DETAIL.map((t) => `${t.time} ${t.label}`).join("；")}。`,
-    `阵营：${FACTIONS.map((f) => `${f.name}[${f.group}组]，口号「${f.slogan}」，合唱曲《${f.song}》，团长 ${f.leader.cn}（QQ ${f.leader.qq}）`).join("；")}。`,
+    `阵营：${FACTIONS.map((f) => `${f.name}[${f.group}组]，口号「${f.slogan}」，合唱曲《${f.song}》`).join("；")}。`,
     `游场：A组在3H馆、B组在4.1H馆分流。A组（崩三&星铁）3H→4.1H→5.1H，经5.1H/6.1H过道向中央会合；B组（原神&绝区零）4.1H→3H→2.1H，经2.1H/1.1H过道向中央会合。合唱串烧最后以《${FINALE_SONG}》收尾。`,
-    `QQ群（一开后开放）：${QQ_GROUPS.map((g) => `${g.name} ${g.id}`).join("；")}。${NICKNAME_RULE}。`,
     `聚餐：${DINNER.time}；${DINNER.rules.join("；")}。`,
     `入场协议：${PROTOCOLS.join("；")}。`,
     `生存注意：${SURVIVAL.map((s) => `${s.text}（${s.why}）`).join("；")}。${SUPPLIES_NOTE}`,

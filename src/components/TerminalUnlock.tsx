@@ -4,24 +4,14 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ChevronDown,
-  Copy,
   FileText,
   Lock,
   LockOpen,
-  Radio,
   Square,
   SquareCheckBig,
-  UserRound,
   UtensilsCrossed,
 } from "lucide-react";
-import {
-  DINNER,
-  DOCS,
-  LEADERS,
-  NICKNAME_RULE,
-  PROTOCOLS,
-  QQ_GROUPS,
-} from "@/data/event";
+import { DINNER, DOCS, PROTOCOLS } from "@/data/event";
 import SectionHeader from "./SectionHeader";
 import { usePersistentState } from "@/lib/usePersistentState";
 import { markConfirmed, needReconfirm } from "@/lib/visit";
@@ -32,30 +22,6 @@ const DECRYPT_LINES = [
   "> DECRYPTING INTEL ......",
   "> ACCESS GRANTED ✓ 授权通过",
 ];
-
-function CopyBtn({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      aria-label="复制"
-      onClick={async () => {
-        try {
-          await navigator.clipboard.writeText(text);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1500);
-        } catch {
-          /* 旧浏览器忽略 */
-        }
-      }}
-      className={`flex items-center gap-1 font-mono text-[10px] tracking-wider transition-colors ${
-        copied ? "text-neon" : "text-slate-500 hover:text-slate-300"
-      }`}
-    >
-      <Copy size={12} />
-      {copied ? "已复制" : "复制"}
-    </button>
-  );
-}
 
 function Accordion({
   icon: Icon,
@@ -165,7 +131,7 @@ export default function TerminalUnlock() {
           {phase !== "open" && (
             <>
               <p className="mb-4 font-mono text-xs leading-6 text-slate-400">
-                检测到加密情报：行动群号 / 酒店拼房文档 / 指挥链 / 聚餐详情。
+                检测到加密情报：酒店拼房文档 / 聚餐详情。
               </p>
               <div className="mb-4">
                 <p className="text-base font-bold tracking-[0.35em] text-slate-100">
@@ -237,45 +203,6 @@ export default function TerminalUnlock() {
               <p className="mb-4 flex items-center gap-2 font-mono text-sm font-bold tracking-[0.2em] text-neon terminal-text">
                 <LockOpen size={16} /> ACCESS GRANTED · 授权通过
               </p>
-
-              <Accordion icon={Radio} title="行动频道 · QQ 群（一开后开放）" defaultOpen>
-                <ul className="space-y-2.5">
-                  {QQ_GROUPS.map((g) => (
-                    <li key={g.id} className="flex items-center justify-between gap-2">
-                      <span className="text-xs text-slate-300">{g.name}</span>
-                      <span className="flex items-center gap-3">
-                        <span className="font-mono text-sm font-black tracking-wider text-neon">
-                          {g.id}
-                        </span>
-                        <CopyBtn text={g.id} />
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <p className="mt-3 border-l-2 border-cyber pl-2.5 text-[11px] leading-5 text-slate-400">
-                  {NICKNAME_RULE}
-                </p>
-              </Accordion>
-
-              <Accordion icon={UserRound} title="指挥链 · 团长直通">
-                <ul className="space-y-2.5">
-                  {LEADERS.map((l) => (
-                    <li key={l.cn} className="flex items-center justify-between gap-2">
-                      <span className="text-xs text-slate-300">
-                        {l.role} · <b className="text-slate-100">{l.cn}</b>
-                      </span>
-                      {l.qq ? (
-                        <span className="flex items-center gap-3">
-                          <span className="font-mono text-sm font-bold text-neon">{l.qq}</span>
-                          <CopyBtn text={l.qq} />
-                        </span>
-                      ) : (
-                        <span className="font-mono text-[10px] text-slate-600">QQ 待公布</span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </Accordion>
 
               <Accordion icon={FileText} title="共享文档 · 拼房 / 搭子 / 招募">
                 <ul className="space-y-2">
