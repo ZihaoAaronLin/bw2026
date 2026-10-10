@@ -306,13 +306,43 @@ export const PLAYLIST: Track[] = [
   { title: "NEON PROTOCOL — 内置巡航 BGM", src: "/audio/neon-protocol.m4a" },
 ];
 
+/* ============ 活动回顾（归档模式）============ */
+/**
+ * 数字全部来自作者本人提供，不要自行增改。
+ * 报名 / 预计到场复用 CREW_STATS，四团报名复用 FACTIONS[].signed（与作者给的数一致）。
+ */
+export const ARCHIVE_RECAP = {
+  heldOn: "2026-07-11",
+  /** 当天实际到场（估计区间） */
+  attended: "约 150–200 人",
+  wall: { cheers: "200+", suggestions: "20+" },
+  /** 站点发布后的新增入群申请（按发布后的申请数算，没扣流失） */
+  joinRequests: "200+",
+  joinRequestsNote: "按发布后的申请数统计，未扣除流失",
+  dev: {
+    tools: "Claude Code 与 Cursor",
+    repoCreated: "6/11",
+    domainLive: "6/14",
+    commitsUntil: "6/17",
+    commits: 25,
+    aiCost: "约 ¥50",
+  },
+  /** 复盘结论：等作者回答后再填，空数组时前台不显示这一块 */
+  retro: [] as { title: string; body: string }[],
+};
+
 /* ============ AI 战术参谋 ============ */
+
+/** DeepSeek 余额用完 / key 失效 / 上游不可用时，前端统一展示这句 */
+export const AI_SLEEP_MSG = "AI 参谋已休眠，可以试试下方快捷问答～";
 
 /** 本地秒答（不消耗 API），key 同时作为快捷按钮文案 */
 export const QUICK_QA: { q: string; a: string }[] = [
   {
     q: "📖 这个网站怎么用？",
-    a: "欢迎接入！从上往下逛：\n· 核心情报：开票/开场倒计时、集合时间地点、票价、当日流程\n· 终端授权：勾选入场协议，解锁聚餐详情\n· 行动纲领：选你的阵营，一键生成专属身份卡，可导出当锁屏\n· 雷达地图：看你阵营的游场路线\n· 落地情报：到场地铁口 / 打车下客点\n· 影像档案馆：往年返图横向相册\n· 应援墙：发条应援飘上墙；想给团长提建议或补交通经验，切到「建议·补充」（私发团长，不公开）\n· 页脚可关注作者小红书\n· 有任何问题，随时回来问我～",
+    a: ARCHIVE_MODE
+      ? "欢迎！活动已于 7.11 结束，这里是归档版。从上往下逛：\n· 数据回顾：报名→到场人数、四团报名、开发过程\n· 核心情报：活动日期地点、当日流程、票务信息\n· 终端授权：入场协议与聚餐规则（只读）\n· 行动纲领：选阵营，一键生成专属身份卡\n· 雷达地图：看各阵营的游场路线\n· 落地情报：到场地铁口 / 打车下客点\n· 影像档案馆：往年返图横向相册\n· 应援墙：大家当时留下的应援（已归档，只读）\n· 页脚有作者信息、GitHub 仓库和小红书\n· 有问题随时问我～"
+      : "欢迎接入！从上往下逛：\n· 核心情报：开票/开场倒计时、集合时间地点、票价、当日流程\n· 终端授权：勾选入场协议，解锁聚餐详情\n· 行动纲领：选你的阵营，一键生成专属身份卡，可导出当锁屏\n· 雷达地图：看你阵营的游场路线\n· 落地情报：到场地铁口 / 打车下客点\n· 影像档案馆：往年返图横向相册\n· 应援墙：发条应援飘上墙；想给团长提建议或补交通经验，切到「建议·补充」（私发团长，不公开）\n· 页脚可关注作者小红书\n· 有任何问题，随时回来问我～",
   },
   {
     q: "几点在哪集合？",
@@ -330,7 +360,9 @@ export const QUICK_QA: { q: string; a: string }[] = [
   },
   {
     q: "票价和开票时间？",
-    a: "游园票 128 / IP典藏票 328 / VIP 558（价格以官方为准）。\n开票：大会员先购 6.20 12:00、一开 6.20 18:00；二开时间待官宣（注意 6.21 是 BML 音乐会的，不是 BW）。\n单 UID 限购 4 张，实名绑定；14 岁以下不可入场，14-18 岁需回传承诺书。",
+    a: ARCHIVE_MODE
+      ? "游园票 128 / IP典藏票 328 / VIP 558（价格以官方为准）。\n开票：大会员先购 6.20 12:00、一开 6.20 18:00（均已结束）。\n单 UID 限购 4 张，实名绑定；14 岁以下不可入场，14-18 岁需回传承诺书。"
+      : "游园票 128 / IP典藏票 328 / VIP 558（价格以官方为准）。\n开票：大会员先购 6.20 12:00、一开 6.20 18:00；二开时间待官宣（注意 6.21 是 BML 音乐会的，不是 BW）。\n单 UID 限购 4 张，实名绑定；14 岁以下不可入场，14-18 岁需回传承诺书。",
   },
   {
     q: "聚餐有什么规矩？",
@@ -348,8 +380,17 @@ export const QUICK_QA: { q: string; a: string }[] = [
 
 /** 喂给 LLM 的完整情报（server 端 system prompt 用） */
 export function buildIntelDossier(): string {
+  const R = ARCHIVE_RECAP;
+  const archive = ARCHIVE_MODE
+    ? [
+        `状态：活动已于 ${R.heldOn} 在${EVENT.venue}举行，现已结束；剧组群已归档，不再开放加入，不提供任何报名、进群或购票引导。`,
+        `数据回顾：报名 ${CREW_STATS.signedTotal} 人次（去重 ${CREW_STATS.signedUnique}）→ 预计到场 ${CREW_STATS.expectedTotal} 人（去重 ${CREW_STATS.expectedUnique}）→ 当天到场${R.attended}。四团报名：${[...FACTIONS].sort((a, b) => b.signed - a.signed).map((f) => `${f.name} ${f.signed}`).join("、")}。应援墙收到应援 ${R.wall.cheers} 条、有效建议 ${R.wall.suggestions} 条。站点发布后新增入群申请 ${R.joinRequests}（${R.joinRequestsNote}）。`,
+        `本站：作者${EVENT.author}借助 ${R.dev.tools} 独立开发，${R.dev.repoCreated} 建仓，${R.dev.domainLive} 上线正式域名，到 ${R.dev.commitsUntil} 共 ${R.dev.commits} 次提交；AI 参谋调用 DeepSeek，花费${R.dev.aiCost}。`,
+      ]
+    : [];
   return [
     `# ${EVENT.name} ${EVENT.crew} 完整情报`,
+    ...archive,
     `活动：${EVENT.name}，${EVENT.dateRange}，地点 ${EVENT.venue}（${EVENT.venueAddress}），${EVENT.metro}。`,
     `7 月 11 日，场内集合地点 ${EVENT.rally}。同期 ${EVENT.bml}。`,
     `票务：${TICKETS.prices.map((p) => `${p.name}${p.price}元`).join("/")}（价格以官方为准）。开票：${TICKETS.rounds.length ? TICKETS.rounds.map((r) => `${r.name} ${r.time}`).join("；") : "BW 一开/二开时间官方尚未公布，待官宣；注意 6.21 是 BML 音乐会的开票时间，不是 BW，不要把两者混淆"}。规则：${TICKETS.rules.join("；")}。`,
@@ -363,6 +404,6 @@ export function buildIntelDossier(): string {
     `到场交通（2025 往年经验）：${FIELD_INTEL.map((c) => `${c.title}——${c.lines.join("，")}`).join("；")}。`,
     `人数（${CREW_STATS.asOf}）：报名 ${CREW_STATS.signedTotal}（除重 ${CREW_STATS.signedUnique}），预计场内 ${CREW_STATS.expectedTotal}（除重 ${CREW_STATS.expectedUnique}）。各团：${FACTIONS.map((f) => `${f.name} ${f.signed}`).join("、")}。`,
     `免责：${DISCLAIMERS.join("；")}。`,
-    `后续：群聊长期开放不解散，将打造跨漫展 IP coser 团，不限江浙沪。`,
+    ...(ARCHIVE_MODE ? [] : [`后续：群聊长期开放不解散，将打造跨漫展 IP coser 团，不限江浙沪。`]),
   ].join("\n");
 }

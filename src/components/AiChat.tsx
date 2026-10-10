@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Bot, SendHorizonal, Square, X } from "lucide-react";
-import { QUICK_QA } from "@/data/event";
+import { AI_SLEEP_MSG, ARCHIVE_MODE, QUICK_QA } from "@/data/event";
 
 interface Msg {
   role: "user" | "assistant";
@@ -12,8 +12,9 @@ interface Msg {
 
 const HELLO: Msg = {
   role: "assistant",
-  content:
-    "信号接通。我是零号参谋，负责 7.11 企划情报问答。\n常见问题点下方快捷指令（不耗算力，秒回）；其他问题直接输入。",
+  content: ARCHIVE_MODE
+    ? "信号接通。我是零号参谋——BW2026 剧组活动已于 7.11 举行，现在负责归档问答。\n常见问题点下方快捷指令（不耗算力，秒回）；其他问题直接输入。"
+    : "信号接通。我是零号参谋，负责 7.11 企划情报问答。\n常见问题点下方快捷指令（不耗算力，秒回）；其他问题直接输入。",
 };
 
 /** 客户端软限额：每日条数（服务端还有硬限额兜底） */
@@ -139,11 +140,11 @@ export default function AiChat() {
 
       if (res.headers.get("content-type")?.includes("application/json")) {
         const data = (await res.json()) as { reply?: string; error?: string };
-        setLast(data.reply ?? data.error ?? "通讯异常，请稍后重试。");
+        setLast(data.reply ?? data.error ?? AI_SLEEP_MSG);
         return;
       }
       if (!res.ok || !res.body) {
-        setLast("通讯异常，请稍后重试。");
+        setLast(AI_SLEEP_MSG);
         return;
       }
       const reader = res.body.getReader();
@@ -153,6 +154,14 @@ export default function AiChat() {
         if (done) break;
         appendLast(decoder.decode(value, { stream: true }));
       }
+      // 上游 200 但一个字都没吐（如中途断流）：别让「解码中」一直挂着
+      setMsgs((m) => {
+        const last = m[m.length - 1];
+        if (last?.role === "assistant" && !last.content) {
+          return [...m.slice(0, -1), { role: "assistant", content: AI_SLEEP_MSG }];
+        }
+        return m;
+      });
     } catch (e) {
       const aborted = (e as Error)?.name === "AbortError";
       // 已有部分内容则保留，仅在空回复时给出提示

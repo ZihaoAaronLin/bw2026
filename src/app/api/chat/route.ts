@@ -1,4 +1,4 @@
-import { buildIntelDossier } from "@/data/event";
+import { AI_SLEEP_MSG, ARCHIVE_MODE, buildIntelDossier } from "@/data/event";
 
 /**
  * AI 战术参谋 · 服务端转发
@@ -7,16 +7,27 @@ import { buildIntelDossier } from "@/data/event";
  *   serverless 每个实例内存独立、冷启动即清零，挡不住分布式刷量，只能
  *   削平单实例瞬时峰值。**真正的硬上限是 DeepSeek 预充值余额**（充少量
  *   即止损，余额耗尽接口自动停）。要严格跨实例限流再换 Upstash Redis。
- * - 未配置 DEEPSEEK_API_KEY 时返回离线提示，前端功能不受影响
+ * - 未配置 DEEPSEEK_API_KEY、余额用完、key 失效或上游不可用时，统一返回 AI_SLEEP_MSG，
+ *   前端照常显示这句并引导用户用快捷问答，不直接报错
  */
 
-const SYSTEM_PROMPT = `你是「零号参谋」，BW2026 米哈游剧组官网的 AI 参谋。
-人设：赛博朋克风格的情报 AI，语气干脆利落，称呼用户为「旅行者」或不称呼，可以用少量术语（如“情报”“坐标”），但禁止卖弄，禁止军事腔。
-规则：
-1. 只回答与本次 BW2026 剧组企划相关的问题（集合、路线、票务、聚餐、群号、规则、注意事项等）。
+const PERSONA = `你是「零号参谋」，BW2026 米哈游剧组官网的 AI 参谋。
+人设：赛博朋克风格的情报 AI，语气干脆利落，称呼用户为「旅行者」或不称呼，可以用少量术语（如“情报”“坐标”），但禁止卖弄，禁止军事腔。`;
+
+const RULES = ARCHIVE_MODE
+  ? `规则：
+1. 活动已于 2026-07-11 结束，本站现为活动归档。只回答与这次 BW2026 剧组活动相关的问题（活动回顾、当日流程、游场路线、数据、本站功能等）；问到进群、报名、购票，说明活动已结束、群已归档。
+2. 与活动无关的问题，一句话礼貌拒绝并把话题引回活动。
+3. 回答必须依据下方情报档案，档案里没有的信息就明说“情报库未收录”，禁止编造。
+4. 用简体中文回答，控制在 200 字以内，可用换行和「·」列表。`
+  : `规则：
+1. 只回答与本次 BW2026 剧组企划相关的问题（集合、路线、票务、聚餐、规则、注意事项等）。
 2. 与企划无关的问题，一句话礼貌拒绝并把话题引回企划。
-3. 回答必须依据下方情报档案，档案里没有的信息就明说“情报库未收录，请在群里问团长”，禁止编造。
-4. 用简体中文回答，控制在 200 字以内，可用换行和「·」列表。
+3. 回答必须依据下方情报档案，档案里没有的信息就明说“情报库未收录，请问团长”，禁止编造。
+4. 用简体中文回答，控制在 200 字以内，可用换行和「·」列表。`;
+
+const SYSTEM_PROMPT = `${PERSONA}
+${RULES}
 
 ===== 情报档案 =====
 ${buildIntelDossier()}`;
@@ -82,10 +93,7 @@ export async function POST(req: Request) {
 
   const apiKey = process.env.DEEPSEEK_API_KEY;
   if (!apiKey) {
-    return Response.json({
-      reply:
-        "AI 链路尚未接通（站长还没配置 DEEPSEEK_API_KEY）。\n快捷指令依然可用，覆盖了 90% 的常见问题；更多详情请进群问团长。",
-    });
+    return Response.json({ reply: AI_SLEEP_MSG });
   }
 
   let upstream: Response;
@@ -110,17 +118,14 @@ export async function POST(req: Request) {
       },
     );
   } catch {
-    return Response.json(
-      { error: "上游链路超时或无法连接，请稍后重试。" },
-      { status: 504 },
-    );
+    console.error("[chat] DeepSeek 超时或无法连接");
+    return Response.json({ error: AI_SLEEP_MSG }, { status: 504 });
   }
 
+  // 402 余额不足 / 401 key 失效 / 5xx 上游故障：都按「休眠」得体提示，状态码只记日志
   if (!upstream.ok || !upstream.body) {
-    return Response.json(
-      { error: `上游链路异常（${upstream.status}），请稍后重试。` },
-      { status: 502 },
-    );
+    console.error(`[chat] DeepSeek 上游异常 ${upstream.status}`);
+    return Response.json({ error: AI_SLEEP_MSG }, { status: 503 });
   }
 
   // SSE → 纯文本流
