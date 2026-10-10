@@ -16,7 +16,6 @@ import PosterGenerator from "@/components/PosterGenerator";
 import RadarMap from "@/components/RadarMap";
 import SurvivalModal from "@/components/SurvivalModal";
 import TerminalUnlock from "@/components/TerminalUnlock";
-import TipJar from "@/components/TipJar";
 import WallSay from "@/components/WallSay";
 import XhsLink from "@/components/XhsLink";
 
@@ -140,7 +139,6 @@ export default function Home() {
               本站设计 · 制作 <span className="text-neon/90">{EVENT.author}</span>
             </span>
             <XhsLink />
-            <TipJar />
           </div>
           <ul className="mt-4 space-y-1 text-[11px] leading-5 text-slate-600">
             {DISCLAIMERS.map((d) => (
