@@ -4,14 +4,13 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ChevronDown,
-  FileText,
   Lock,
   LockOpen,
   Square,
   SquareCheckBig,
   UtensilsCrossed,
 } from "lucide-react";
-import { DINNER, DOCS, PROTOCOLS } from "@/data/event";
+import { DINNER, PROTOCOLS } from "@/data/event";
 import SectionHeader from "./SectionHeader";
 import { usePersistentState } from "@/lib/usePersistentState";
 import { markConfirmed, needReconfirm } from "@/lib/visit";
@@ -131,7 +130,7 @@ export default function TerminalUnlock() {
           {phase !== "open" && (
             <>
               <p className="mb-4 font-mono text-xs leading-6 text-slate-400">
-                检测到加密情报：酒店拼房文档 / 聚餐详情。
+                检测到加密情报：聚餐详情。
               </p>
               <div className="mb-4">
                 <p className="text-base font-bold tracking-[0.35em] text-slate-100">
@@ -204,24 +203,7 @@ export default function TerminalUnlock() {
                 <LockOpen size={16} /> ACCESS GRANTED · 授权通过
               </p>
 
-              <Accordion icon={FileText} title="共享文档 · 拼房 / 搭子 / 招募">
-                <ul className="space-y-2">
-                  {DOCS.map((d) => (
-                    <li key={d.url}>
-                      <a
-                        href={d.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block truncate text-xs leading-6 text-slate-300 underline decoration-neon/40 underline-offset-4 hover:text-neon"
-                      >
-                        ↗ {d.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </Accordion>
-
-              <Accordion icon={UtensilsCrossed} title={`聚餐协议 · ${DINNER.time}`}>
+              <Accordion icon={UtensilsCrossed} title={`聚餐协议 · ${DINNER.time}`} defaultOpen>
                 <ul className="space-y-1.5 text-xs leading-5 text-slate-300">
                   {DINNER.rules.map((r) => (
                     <li key={r}>· {r}</li>
