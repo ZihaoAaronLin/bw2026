@@ -127,3 +127,25 @@ export async function listInbox(n = 200): Promise<InboxMsg[]> {
 export async function clearWall(): Promise<void> {
   await redis(["DEL", KEY]);
 }
+
+/**
+ * 按 id 删除单条公开应援：先 LRANGE 取原始 JSON 串，再用 LREM 按原串精确删除
+ * （不按下标删，避免期间列表变动删错）。找不到返回 null。
+ */
+export async function deleteMessage(id: string): Promise<WallMsg | null> {
+  const raw = await redis<string[]>(["LRANGE", KEY, 0, -1]);
+  if (!Array.isArray(raw)) return null;
+  for (const s of raw) {
+    let m: WallMsg;
+    try {
+      m = JSON.parse(s) as WallMsg;
+    } catch {
+      continue;
+    }
+    if (m.id === id) {
+      const removed = (await redis<number>(["LREM", KEY, 1, s])) ?? 0;
+      return removed > 0 ? m : null;
+    }
+  }
+  return null;
+}

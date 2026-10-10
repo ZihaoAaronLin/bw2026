@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Lightbulb, Megaphone, ScrollText, Send, Sparkles, X } from "lucide-react";
-import { WALL_SEED } from "@/data/event";
+import { Lightbulb, Lock, Megaphone, ScrollText, Send, Sparkles, X } from "lucide-react";
+import { ARCHIVE_MODE, WALL_SEED } from "@/data/event";
 import type { WallMsg } from "@/lib/wall";
 import SectionHeader from "./SectionHeader";
 
@@ -44,20 +44,26 @@ export default function WallSay() {
 
   const queue = useRef<{ text: string; hue: number }[]>([]);
   const seen = useRef<Set<string>>(new Set());
+  /** 归档模式循环播放的真实留言池 */
+  const pool = useRef<{ text: string; hue: number }[]>([]);
 
   const enqueue = useCallback((t: string, hue: number) => {
     queue.current.push({ text: t, hue });
   }, []);
 
-  const maxLen = kind === "enquiry" ? 200 : 40;
-
-  // 挂载即预灌几条种子，进场不冷清
-  useEffect(() => {
+  const seedSome = useCallback(() => {
     [...WALL_SEED]
       .sort(() => Math.random() - 0.5)
       .slice(0, 6)
       .forEach((s) => enqueue(s, randHue()));
   }, [enqueue]);
+
+  const maxLen = kind === "enquiry" ? 200 : 40;
+
+  // 挂载即预灌几条种子，进场不冷清（归档模式先等真实留言，拿不到再兜底）
+  useEffect(() => {
+    if (!ARCHIVE_MODE) seedSome();
+  }, [seedSome]);
 
   // 首次握手：拿 configured + 初始留言
   useEffect(() => {
@@ -69,6 +75,8 @@ export default function WallSay() {
         setConfigured(d.configured);
         const msgs = d.messages ?? [];
         setRecent(msgs);
+        pool.current = msgs.map((m) => ({ text: m.text, hue: m.hue }));
+        if (ARCHIVE_MODE && msgs.length === 0) seedSome();
         [...msgs].reverse().forEach((m) => {
           if (!seen.current.has(m.id)) {
             seen.current.add(m.id);
@@ -76,11 +84,13 @@ export default function WallSay() {
           }
         });
       })
-      .catch(() => {});
+      .catch(() => {
+        if (alive && ARCHIVE_MODE) seedSome();
+      });
     return () => {
       alive = false;
     };
-  }, [enqueue]);
+  }, [enqueue, seedSome]);
 
   // reduced-motion 探测
   useEffect(() => {
@@ -126,7 +136,14 @@ export default function WallSay() {
 
     const seed = setInterval(() => {
       if (queue.current.length < 2) {
-        enqueue(WALL_SEED[Math.floor(Math.random() * WALL_SEED.length)], randHue());
+        // 归档模式循环真实留言；没有真实留言（或活动期）才用预设应援补位
+        const real = ARCHIVE_MODE ? pool.current : [];
+        if (real.length) {
+          const m = real[Math.floor(Math.random() * real.length)];
+          enqueue(m.text, m.hue);
+        } else {
+          enqueue(WALL_SEED[Math.floor(Math.random() * WALL_SEED.length)], randHue());
+        }
       }
     }, 1100);
 
@@ -136,9 +153,9 @@ export default function WallSay() {
     };
   }, [reduced, inView, showAll, enqueue]);
 
-  // 轮询新留言（仅共享模式 + 视口内）
+  // 轮询新留言（仅共享模式 + 视口内；归档只读不会有新留言，不轮询）
   useEffect(() => {
-    if (!configured || !inView) return;
+    if (ARCHIVE_MODE || !configured || !inView) return;
     const poll = setInterval(() => {
       fetch("/api/wall")
         .then((r) => r.json())
@@ -235,7 +252,13 @@ export default function WallSay() {
         code="MODULE_07"
         title="应援墙"
         en="HAVE YOUR SAY"
-        sub={configured ? "留言实时飘上墙 · 大家都能看到" : "冒个泡 · 留下你的应援"}
+        sub={
+          ARCHIVE_MODE
+            ? "活动已结束 · 只读展示大家留下的应援"
+            : configured
+              ? "留言实时飘上墙 · 大家都能看到"
+              : "冒个泡 · 留下你的应援"
+        }
       />
 
       <div
@@ -278,7 +301,7 @@ export default function WallSay() {
         {!reduced && bubbles.length === 0 && (
           <div className="pointer-events-none absolute inset-0 grid place-items-center">
             <p className="font-mono text-xs tracking-[0.3em] text-slate-600">
-              冒个泡，让你的应援飘起来 ↓
+              {ARCHIVE_MODE ? "应援墙已归档" : "冒个泡，让你的应援飘起来 ↓"}
             </p>
           </div>
         )}
@@ -294,9 +317,14 @@ export default function WallSay() {
         </button>
       </div>
 
-      {/* 输入区 */}
+      {/* 输入区（归档模式只读） */}
       <div className="mt-4">
-        {!open ? (
+        {ARCHIVE_MODE ? (
+          <p className="flex items-center gap-2 font-mono text-xs tracking-wider text-slate-500">
+            <Lock size={13} className="text-neon/70" />
+            应援墙已归档 · 只读，不再接收新留言
+          </p>
+        ) : !open ? (
           <button
             onClick={() => setOpen(true)}
             className="clip-corner-sm flex items-center gap-2 bg-neon px-5 py-3 font-mono text-sm font-bold tracking-widest text-slate-950"

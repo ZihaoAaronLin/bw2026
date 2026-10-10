@@ -1,9 +1,11 @@
 /**
  * 应援泡泡墙 API
  * - GET    返回 { configured, messages }
- * - POST   提交一条留言（审核 + 限流），返回新留言
+ * - POST   提交一条留言（审核 + 限流），返回新留言；归档模式统一拒绝
  * - DELETE 团长清墙：?secret=WALL_ADMIN_SECRET（未配置 secret 则禁用）
+ * 逐条审核 / 删除单条见 ./admin/route.ts
  */
+import { ARCHIVE_MODE } from "@/data/event";
 import {
   clean,
   clearWall,
@@ -53,6 +55,10 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  // 归档：只读，任何提交都统一回这一句
+  if (ARCHIVE_MODE) {
+    return Response.json({ error: "活动已结束，应援墙已归档" }, { status: 410 });
+  }
   if (!wallConfigured) {
     // 未接后端：前端会走本地氛围版，这里直接告知
     return Response.json({ configured: false }, { status: 200 });
