@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { toBlob } from "html-to-image";
 import { Download, ImageDown, Loader2, Share2, X } from "lucide-react";
 import {
+  ARCHIVE_MODE,
   CHORUS_NOTE,
   EVENT,
   FACTIONS,
@@ -87,7 +88,7 @@ function AgentCard({
       {/* 时间轴 */}
       <div style={{ marginTop: 16 }}>
         <p style={{ fontSize: 10, letterSpacing: "0.3em", color: "#94a3b8" }}>
-          OP_TIMELINE · 7.11（预）
+          {ARCHIVE_MODE ? "OP_TIMELINE · 7.11" : "OP_TIMELINE · 7.11（预）"}
         </p>
         <div style={{ marginTop: 6 }}>
           {TIMELINE.map((t) => (
