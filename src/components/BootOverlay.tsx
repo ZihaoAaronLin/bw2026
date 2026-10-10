@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Power, VolumeX } from "lucide-react";
-import { EVENT } from "@/data/event";
+import { ARCHIVE_MODE, EVENT } from "@/data/event";
 import { useMusic } from "./MusicPlayer";
 
 const BOOT_LINES = [
@@ -14,32 +14,52 @@ const BOOT_LINES = [
   "> WELCOME TO BW2026 TERMINAL",
 ];
 
-/** 全屏开机引导：点击即用户手势，同步解锁音频后播放开机序列 */
+/** 归档版：挂载即自动播放，4 行 × 200ms + 250ms 停顿 ≈ 1.05s，加 0.3s 淡出，2 秒内进入正文 */
+const ARCHIVE_BOOT_LINES = [
+  "> LINK START ...",
+  "> 接入 BW2026 剧组归档 .............. OK",
+  "> 7.11 已举行 · 载入数据回顾 ......... OK",
+  "> WELCOME BACK",
+];
+
+/**
+ * 全屏开机引导
+ * - 活动期：点击即用户手势，同步解锁音频后播放开机序列
+ * - 归档模式：不用点，自动放完；点任意处立即跳过（BGM 改由右下角音乐坞手动开）
+ */
 export default function BootOverlay({ onDone }: { onDone: () => void }) {
   const { start } = useMusic();
   const [lines, setLines] = useState<string[]>([]);
-  const [booting, setBooting] = useState(false);
+  const [booting, setBooting] = useState(ARCHIVE_MODE);
   const doneRef = useRef(false);
+
+  const finish = useCallback(() => {
+    if (doneRef.current) return;
+    doneRef.current = true;
+    onDone();
+  }, [onDone]);
 
   // 开机序列：逐行打出，然后交还主页面
   useEffect(() => {
     if (!booting) return;
+    const seq = ARCHIVE_MODE ? ARCHIVE_BOOT_LINES : BOOT_LINES;
+    const step = ARCHIVE_MODE ? 200 : 260;
+    const hold = ARCHIVE_MODE ? 250 : 450;
     let i = 0;
+    let holdTimer: ReturnType<typeof setTimeout> | undefined;
     const timer = setInterval(() => {
       i += 1;
-      setLines(BOOT_LINES.slice(0, i));
-      if (i >= BOOT_LINES.length) {
+      setLines(seq.slice(0, i));
+      if (i >= seq.length) {
         clearInterval(timer);
-        setTimeout(() => {
-          if (!doneRef.current) {
-            doneRef.current = true;
-            onDone();
-          }
-        }, 450);
+        holdTimer = setTimeout(finish, hold);
       }
-    }, 260);
-    return () => clearInterval(timer);
-  }, [booting, onDone]);
+    }, step);
+    return () => {
+      clearInterval(timer);
+      if (holdTimer) clearTimeout(holdTimer);
+    };
+  }, [booting, finish]);
 
   const boot = (withSound: boolean) => {
     if (booting) return;
@@ -51,7 +71,8 @@ export default function BootOverlay({ onDone }: { onDone: () => void }) {
     <motion.div
       className="cyber-grid fixed inset-0 z-[80] flex flex-col items-center justify-center bg-slate-950 px-6"
       exit={{ opacity: 0, scale: 1.06 }}
-      transition={{ duration: 0.5, ease: "easeInOut" }}
+      transition={{ duration: ARCHIVE_MODE ? 0.3 : 0.5, ease: "easeInOut" }}
+      onClick={ARCHIVE_MODE ? finish : undefined}
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(181,23,158,0.18),transparent_65%)]" />
 
@@ -95,6 +116,15 @@ export default function BootOverlay({ onDone }: { onDone: () => void }) {
           ))}
           <span className="animate-blink">▍</span>
         </div>
+      )}
+
+      {ARCHIVE_MODE && (
+        <button
+          onClick={finish}
+          className="absolute bottom-6 right-6 font-mono text-xs tracking-widest text-slate-500 hover:text-slate-300"
+        >
+          点击任意处跳过 ▸
+        </button>
       )}
     </motion.div>
   );

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
-import { DISCLAIMERS, EVENT, FACTIONS, type Faction } from "@/data/event";
+import { ARCHIVE_MODE, DISCLAIMERS, EVENT, FACTIONS, type Faction } from "@/data/event";
 import { needReconfirm } from "@/lib/visit";
 import AiChat from "@/components/AiChat";
 import BootOverlay from "@/components/BootOverlay";
@@ -21,7 +21,10 @@ import XhsLink from "@/components/XhsLink";
 export default function Home() {
   const [booted, setBooted] = useState(false);
   const [faction, setFaction] = useState<Faction | null>(null);
-  const [survival, setSurvival] = useState<"pending" | "open" | "done">("pending");
+  // 归档模式不再弹生存红线：直接视为已确认
+  const [survival, setSurvival] = useState<"pending" | "open" | "done">(
+    ARCHIVE_MODE ? "done" : "pending",
+  );
 
   // 仪式感优先：每次进站都从开机画面开始，不恢复上次滚动位置
   useEffect(() => {
@@ -34,7 +37,9 @@ export default function Home() {
   // 关标签页即忘，不会跨天还记着上次选的。
   useEffect(() => {
     try {
-      if (needReconfirm("bw-survival-done-at")) {
+      if (ARCHIVE_MODE) {
+        /* 归档：不弹生存红线 */
+      } else if (needReconfirm("bw-survival-done-at")) {
         localStorage.removeItem("bw-survival-checks"); // 强制重勾：清空旧勾选
       } else {
         setSurvival("done");

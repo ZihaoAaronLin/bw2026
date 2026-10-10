@@ -6,11 +6,12 @@ import {
   ChevronDown,
   Lock,
   LockOpen,
+  ScrollText,
   Square,
   SquareCheckBig,
   UtensilsCrossed,
 } from "lucide-react";
-import { DINNER, PROTOCOLS } from "@/data/event";
+import { ARCHIVE_MODE, DINNER, PROTOCOLS } from "@/data/event";
 import SectionHeader from "./SectionHeader";
 import { usePersistentState } from "@/lib/usePersistentState";
 import { markConfirmed, needReconfirm } from "@/lib/visit";
@@ -71,13 +72,17 @@ export default function TerminalUnlock() {
     "bw-terminal-checks",
     PROTOCOLS.map(() => false),
   );
-  const [phase, setPhase] = useState<"locked" | "decrypting" | "open">("locked");
+  // 归档模式直接展开（只读），不再要求逐条签署
+  const [phase, setPhase] = useState<"locked" | "decrypting" | "open">(
+    ARCHIVE_MODE ? "open" : "locked",
+  );
   const [lines, setLines] = useState<string[]>([]);
   const safe = PROTOCOLS.map((_, i) => checked[i] ?? false);
   const allChecked = safe.every(Boolean);
 
-  // 注水：上次解锁在 5 次访问内则直接展开情报；否则强制重新签署（清空旧勾选）
+  // 注水：上次解锁在 3 次访问 / 15 分钟内则直接展开情报；否则强制重新签署（清空旧勾选）
   useEffect(() => {
+    if (ARCHIVE_MODE) return;
     if (needReconfirm("bw-terminal-unlocked-at")) {
       setChecked(PROTOCOLS.map(() => false));
     } else {
@@ -200,8 +205,18 @@ export default function TerminalUnlock() {
               className="space-y-3"
             >
               <p className="mb-4 flex items-center gap-2 font-mono text-sm font-bold tracking-[0.2em] text-neon terminal-text">
-                <LockOpen size={16} /> ACCESS GRANTED · 授权通过
+                <LockOpen size={16} /> {ARCHIVE_MODE ? "ARCHIVE · 归档只读" : "ACCESS GRANTED · 授权通过"}
               </p>
+
+              {ARCHIVE_MODE && (
+                <Accordion icon={ScrollText} title="入场协议 · 活动期需逐条签署">
+                  <ul className="space-y-1.5 text-xs leading-5 text-slate-300">
+                    {PROTOCOLS.map((p) => (
+                      <li key={p}>· {p}</li>
+                    ))}
+                  </ul>
+                </Accordion>
+              )}
 
               <Accordion icon={UtensilsCrossed} title={`聚餐协议 · ${DINNER.time}`} defaultOpen>
                 <ul className="space-y-1.5 text-xs leading-5 text-slate-300">
