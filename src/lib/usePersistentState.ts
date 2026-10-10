@@ -21,6 +21,7 @@ export function usePersistentState<T>(
   useEffect(() => {
     try {
       const raw = localStorage.getItem(key);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 有意为之：挂载后从 localStorage 注水一次（SSR 首屏必须用 initial）
       if (raw != null) setState(JSON.parse(raw) as T);
     } catch {
       /* 隐私模式 / 禁用存储时静默降级 */

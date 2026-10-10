@@ -86,6 +86,7 @@ export default function TerminalUnlock() {
     if (needReconfirm("bw-terminal-unlocked-at")) {
       setChecked(PROTOCOLS.map(() => false));
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 有意为之：挂载后按访问记录决定是否直接展开（SSR 首屏无法读取）
       setPhase("open");
     }
     // 只在挂载时判定一次

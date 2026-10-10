@@ -42,6 +42,7 @@ export default function Home() {
       } else if (needReconfirm("bw-survival-done-at")) {
         localStorage.removeItem("bw-survival-checks"); // 强制重勾：清空旧勾选
       } else {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- 有意为之：挂载后按浏览器存储恢复确认状态（SSR 首屏无法读取）
         setSurvival("done");
       }
       const fid = sessionStorage.getItem("bw-faction");
