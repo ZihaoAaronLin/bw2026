@@ -270,6 +270,7 @@ export interface Photo {
 }
 
 export const PHOTOS: Photo[] = [
+  // 出镜者在征集时均已同意；全站只保留作者本人花名，其余照片不标注花名
   { src: "/photos/crew-01.jpg", alt: "剧组返图", year: 2025, w: 416, h: 559 },
   { src: "/photos/crew-02.jpg", alt: "CN瑾瑜", year: 2025, w: 416, h: 559 },
   { src: "/photos/crew-03.jpg", alt: "剧组返图", year: 2025, w: 416, h: 559 },
