@@ -56,7 +56,12 @@ export default function AiChat() {
       /* 隐私模式：照常往下走 */
     }
     const onScroll = () => {
-      if (window.scrollY > window.innerHeight * 0.9) {
+      // 归档模式：等「数据回顾」基本滚出视野再招呼，免得气泡压在数据上
+      const recap = ARCHIVE_MODE ? document.getElementById("recap") : null;
+      const ready = recap
+        ? recap.getBoundingClientRect().bottom < window.innerHeight * 0.5
+        : window.scrollY > window.innerHeight * 0.9;
+      if (ready) {
         setShowHint(true);
         window.removeEventListener("scroll", onScroll);
       }
