@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { BookHeart, X } from "lucide-react";
-import { EVENT } from "@/data/event";
+import { ARCHIVE_MODE, EVENT } from "@/data/event";
 
 const XHS = "#ff2442"; // 小红书品牌红
 
@@ -49,7 +49,7 @@ export default function XhsLink({ hint = false }: { hint?: boolean }) {
               className="clip-corner-sm block border bg-slate-900/95 px-3 py-2 text-left text-[12px] leading-4 text-slate-100"
               style={{ borderColor: `${XHS}88` }}
             >
-              👆 关注作者，催更新功能～
+              {ARCHIVE_MODE ? "关注作者小红书" : "👆 关注作者，催更新功能～"}
             </span>
             <button
               onClick={() => setShowHint(false)}

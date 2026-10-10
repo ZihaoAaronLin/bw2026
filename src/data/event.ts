@@ -30,6 +30,8 @@ export const EVENT = {
   credit: "网站所有者：瑾瑜",
   /** 网站作者（圈名/CN），用于扉页 & Hero 署名 */
   author: "瑾瑜",
+  /** 源码仓库 */
+  repo: "https://github.com/ZihaoAaronLin/bw2026",
   /** 作者小红书主页 */
   xhs: "https://xhslink.com/m/335MGK1W6b4",
 } as const;

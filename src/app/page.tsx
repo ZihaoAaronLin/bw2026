@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
+import { FolderGit2 } from "lucide-react";
 import { ARCHIVE_MODE, DISCLAIMERS, EVENT, FACTIONS, type Faction } from "@/data/event";
 import { needReconfirm } from "@/lib/visit";
 import AiChat from "@/components/AiChat";
@@ -115,8 +116,26 @@ export default function Home() {
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <span className="font-mono text-xs tracking-wider text-slate-400">
-              本站设计 · 制作 <span className="text-neon/90">{EVENT.author}</span>
+              {ARCHIVE_MODE ? (
+                <>
+                  作者：<span className="text-neon/90">{EVENT.author}</span>
+                </>
+              ) : (
+                <>
+                  本站设计 · 制作 <span className="text-neon/90">{EVENT.author}</span>
+                </>
+              )}
             </span>
+            {ARCHIVE_MODE && (
+              <a
+                href={EVENT.repo}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="clip-corner-sm inline-flex items-center gap-1.5 border border-slate-600 px-4 py-2 font-mono text-xs tracking-widest text-slate-300 transition-colors hover:border-neon/60 hover:text-neon"
+              >
+                <FolderGit2 size={15} /> GitHub 源码
+              </a>
+            )}
             <XhsLink />
           </div>
           <ul className="mt-4 space-y-1 text-[11px] leading-5 text-slate-600">
