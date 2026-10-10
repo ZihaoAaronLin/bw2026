@@ -5,6 +5,7 @@ import { AnimatePresence } from "framer-motion";
 import { ARCHIVE_MODE, DISCLAIMERS, EVENT, FACTIONS, type Faction } from "@/data/event";
 import { needReconfirm } from "@/lib/visit";
 import AiChat from "@/components/AiChat";
+import ArchiveRecap from "@/components/ArchiveRecap";
 import BootOverlay from "@/components/BootOverlay";
 import FieldIntel from "@/components/FieldIntel";
 import Gallery from "@/components/Gallery";
@@ -97,6 +98,7 @@ export default function Home() {
 
       <main>
         <Hero />
+        {ARCHIVE_MODE && <ArchiveRecap />}
         <IntelBrief />
         <TerminalUnlock />
         <PosterGenerator faction={faction} onSelect={selectFaction} />

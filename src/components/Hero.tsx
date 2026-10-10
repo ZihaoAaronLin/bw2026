@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { ChevronDown, MapPin, Zap } from "lucide-react";
-import { EVENT, FACTIONS } from "@/data/event";
+import { ARCHIVE_MODE, EVENT, FACTIONS } from "@/data/event";
 import XhsLink from "./XhsLink";
 
 export default function Hero() {
@@ -19,7 +19,9 @@ export default function Hero() {
         transition={{ delay: 0.1 }}
         className="mb-6 font-mono text-[11px] tracking-[0.4em] text-neon/80 md:text-xs"
       >
-        {"// SYS.BOOT COMPLETE — MIHOYO CREW NETWORK"}
+        {ARCHIVE_MODE
+          ? "// ARCHIVED · 活动已于 7.11 举行"
+          : "// SYS.BOOT COMPLETE — MIHOYO CREW NETWORK"}
       </motion.p>
 
       <motion.h1
@@ -98,8 +100,8 @@ export default function Hero() {
       </motion.div>
 
       <a
-        href="#intel"
-        aria-label="向下滚动"
+        href={ARCHIVE_MODE ? "#recap" : "#intel"}
+        aria-label={ARCHIVE_MODE ? "向下查看数据回顾" : "向下滚动"}
         className="absolute bottom-6 left-1/2 -translate-x-1/2 text-neon"
       >
         <ChevronDown size={30} className="animate-bounce-down" />
