@@ -318,7 +318,8 @@ export const ARCHIVE_RECAP = {
   heldOn: "2026-07-11",
   /** 当天实际到场（估计区间） */
   attended: "约 150–200 人",
-  wall: { cheers: "200+", suggestions: "20+" },
+  /** 应援数含 QQ 群内应援，所以比站内应援墙的公开留言多 */
+  wall: { cheers: "200+", cheersNote: "含 QQ 群内应援", suggestions: "20+" },
   /** 站点发布后的新增入群申请（按发布后的申请数算，没扣流失） */
   joinRequests: "200+",
   joinRequestsNote: "按发布后的申请数统计，未扣除流失",
@@ -396,7 +397,7 @@ export function buildIntelDossier(): string {
   const archive = ARCHIVE_MODE
     ? [
         `状态：活动已于 ${R.heldOn} 在${EVENT.venue}举行，现已结束；剧组群已归档，不再开放加入，不提供任何报名、进群或购票引导。`,
-        `数据回顾：报名 ${CREW_STATS.signedTotal} 人次（去重 ${CREW_STATS.signedUnique}）→ 预计到场 ${CREW_STATS.expectedTotal} 人（去重 ${CREW_STATS.expectedUnique}）→ 当天到场${R.attended}。四团报名：${[...FACTIONS].sort((a, b) => b.signed - a.signed).map((f) => `${f.name} ${f.signed}`).join("、")}。应援墙收到应援 ${R.wall.cheers} 条、有效建议 ${R.wall.suggestions} 条。站点发布后新增入群申请 ${R.joinRequests}（${R.joinRequestsNote}）。`,
+        `数据回顾：报名 ${CREW_STATS.signedTotal} 人次（去重 ${CREW_STATS.signedUnique}）→ 预计到场 ${CREW_STATS.expectedTotal} 人（去重 ${CREW_STATS.expectedUnique}）→ 当天到场${R.attended}。四团报名：${[...FACTIONS].sort((a, b) => b.signed - a.signed).map((f) => `${f.name} ${f.signed}`).join("、")}。收到应援 ${R.wall.cheers} 条（${R.wall.cheersNote}）、有效建议 ${R.wall.suggestions} 条。站点发布后新增入群申请 ${R.joinRequests}（${R.joinRequestsNote}）。`,
         `本站：作者${EVENT.author}借助 ${R.dev.tools} 独立开发，${R.dev.repoCreated} 建仓，${R.dev.domainLive} 上线正式域名，到 ${R.dev.commitsUntil} 共 ${R.dev.commits} 次提交；AI 参谋调用 DeepSeek，花费${R.dev.aiCost}。`,
         ...(R.retro.length
           ? [`复盘：${R.retro.map((r) => `${r.title}——${r.body}`).join("；")}`]

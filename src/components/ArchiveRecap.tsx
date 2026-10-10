@@ -125,14 +125,16 @@ export default function ArchiveRecap() {
       {/* 应援墙 & 入群 */}
       <motion.div {...fadeUp} className="mt-10">
         <p className="mb-3 flex items-center gap-2 font-mono text-xs tracking-[0.3em] text-neon/70">
-          <MessagesSquare size={14} /> {"// 应援墙与入群"}
+          <MessagesSquare size={14} /> {"// 应援与入群"}
         </p>
         <div className="grid grid-cols-3 gap-2">
-          <Tile label="应援" value={R.wall.cheers} unit="条" />
+          <Tile label="应援" value={R.wall.cheers} unit="条" sub="含群内" />
           <Tile label="有效建议" value={R.wall.suggestions} unit="条" />
           <Tile label="新增入群申请" value={R.joinRequests} sub="站点发布后" />
         </div>
-        <p className="mt-2 text-[11px] text-slate-500">注：入群申请{R.joinRequestsNote}。</p>
+        <p className="mt-2 text-[11px] text-slate-500">
+          注：应援数{R.wall.cheersNote}；入群申请{R.joinRequestsNote}。
+        </p>
       </motion.div>
 
       {/* 开发 */}
