@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { CalendarDays, Flag, MapPin, Mic2, TrainFront } from "lucide-react";
 import {
+  ARCHIVE_MODE,
   CREW_STATS,
   EVENT,
   FACTIONS,
@@ -89,10 +90,29 @@ export default function IntelBrief() {
     <section id="intel" className="mx-auto w-full max-w-5xl px-4 py-20">
       <SectionHeader code="MODULE_01" title="核心情报" en="INTEL BRIEF" />
 
-      {/* 双倒计时 */}
+      {/* 双倒计时；归档模式换成静态「已举行」，开票倒计时已过期直接隐藏 */}
       <motion.div {...fadeUp} className="flex flex-col gap-3 md:flex-row">
-        <CountdownCard label="距 6.20 开票 // TICKET DROP" target={TICKETS.saleStart} accent="#f4a623" expiredLabel="已开票 · 速抢！" tbdLabel="待官宣" />
-        <CountdownCard label="距 7.11 开场 // OPENING DAY" target={EVENT.dDay} accent="#ff003c" expiredLabel="活动进行中！" />
+        {ARCHIVE_MODE ? (
+          <div
+            className="neon-frame clip-corner flex-1 border bg-slate-900/85 p-4"
+            style={{ "--glow": "#00f5d4", borderColor: "#00f5d466" } as React.CSSProperties}
+          >
+            <p className="font-mono text-[10px] tracking-[0.3em] text-slate-400">
+              7.11 开场 // OPENING DAY
+            </p>
+            <p className="mt-2 font-mono text-2xl font-black text-neon md:text-3xl">
+              已举行 · HELD
+            </p>
+            <p className="mt-1 text-xs text-slate-500">
+              2026.07.11 14:00 · {EVENT.venue}
+            </p>
+          </div>
+        ) : (
+          <>
+            <CountdownCard label="距 6.20 开票 // TICKET DROP" target={TICKETS.saleStart} accent="#f4a623" expiredLabel="已开票 · 速抢！" tbdLabel="待官宣" />
+            <CountdownCard label="距 7.11 开场 // OPENING DAY" target={EVENT.dDay} accent="#ff003c" expiredLabel="活动进行中！" />
+          </>
+        )}
       </motion.div>
 
       {/* 关键事实 */}
@@ -119,7 +139,9 @@ export default function IntelBrief() {
       {/* 7.11 时间轴 */}
       <motion.div {...fadeUp} className="mt-10">
         <p className="mb-4 font-mono text-xs tracking-[0.3em] text-neon/70">
-          {"// 7.11 当日流程（预）—— 时间掐死，不等任何人"}
+          {ARCHIVE_MODE
+            ? "// 7.11 当日流程"
+            : "// 7.11 当日流程（预）—— 时间掐死，不等任何人"}
         </p>
         <ol className="relative ml-2 space-y-5 border-l border-neon/30 pl-6">
           {TIMELINE.map((t, i) => (
