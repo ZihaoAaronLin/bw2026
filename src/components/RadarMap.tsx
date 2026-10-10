@@ -187,7 +187,7 @@ export default function RadarMap({ faction }: { faction: Faction | null }) {
                 key={g}
                 className="clip-corner-sm flex items-center gap-3 border px-3 py-2.5"
                 style={{
-                  borderColor: isActive ? activeColor : "#33415588",
+                  borderColor: isActive ? activeColor : "rgb(51 65 85 / 0.53)",
                   background: isActive ? `${activeColor}14` : "transparent",
                 }}
               >

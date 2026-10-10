@@ -236,7 +236,7 @@ export default function PosterGenerator({
             style={
               {
                 "--glow": f.color,
-                borderColor: faction?.id === f.id ? f.color : "#33415588",
+                borderColor: faction?.id === f.id ? f.color : "rgb(51 65 85 / 0.53)",
               } as React.CSSProperties
             }
           >

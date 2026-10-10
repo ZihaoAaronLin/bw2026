@@ -13,6 +13,10 @@ import {
 } from "@/data/event";
 import SectionHeader from "./SectionHeader";
 
+const MINUTE_MS = 60 * 1000;
+const HOUR_MS = 60 * MINUTE_MS;
+const DAY_MS = 24 * HOUR_MS;
+
 function useCountdown(target: string) {
   const [left, setLeft] = useState<number | null>(null);
   useEffect(() => {
@@ -24,10 +28,10 @@ function useCountdown(target: string) {
     return () => clearInterval(id);
   }, [target]);
   if (left === null) return null; // SSR/首帧占位，避免水合不一致
-  const d = Math.floor(left / 86400000);
-  const h = Math.floor((left % 86400000) / 3600000);
-  const m = Math.floor((left % 3600000) / 60000);
-  const s = Math.floor((left % 60000) / 1000);
+  const d = Math.floor(left / DAY_MS);
+  const h = Math.floor((left % DAY_MS) / HOUR_MS);
+  const m = Math.floor((left % HOUR_MS) / MINUTE_MS);
+  const s = Math.floor((left % MINUTE_MS) / 1000);
   return { d, h, m, s, done: left <= 0 };
 }
 
