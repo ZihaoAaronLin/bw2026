@@ -15,14 +15,23 @@ const geistMono = Geist_Mono({
 });
 
 /**
- * 团长的话专用毛笔行书：志莽行书（SIL OFL 1.1，许可证见 fonts/ZhiMangXing-OFL.txt），
- * 只抽了信里用到的约 180 个汉字 + 常用标点（不含英文字母，西文退回 Geist），
- * 约 50 KB，自托管不走 Google（国内打不开）。
- * 改团长的话文字后要重新抽字，否则新字会退回系统字体。
+ * 团长的话的两款字体，都只抽了用到的字、自托管（不走 Google，国内打不开）。
+ * 改了团长的话的文字要重新抽字，否则新字会退回系统字体（步骤见 scripts/calligraphy/README.md）。
+ * - 志莽行书（SIL OFL 1.1，fonts/ZhiMangXing-OFL.txt）：题记两句 + 署名，约 7 KB
+ * - 霞鹜文楷（SIL OFL 1.1，fonts/LXGWWenKai-OFL.txt，许可证允许网页用途的子集保留原名）：
+ *   正文与结尾，含英文字母，约 49 KB
  */
 const brush = localFont({
   src: "./fonts/ZhiMangXing-captain.woff2",
   variable: "--font-brush",
+  weight: "400",
+  display: "swap",
+  adjustFontFallback: false,
+});
+
+const kai = localFont({
+  src: "./fonts/LXGWWenKai-captain.woff2",
+  variable: "--font-kai",
   weight: "400",
   display: "swap",
   adjustFontFallback: false,
@@ -69,7 +78,7 @@ export default function RootLayout({
   return (
     <html
       lang="zh-CN"
-      className={`${geistSans.variable} ${geistMono.variable} ${brush.variable} h-full antialiased${
+      className={`${geistSans.variable} ${geistMono.variable} ${brush.variable} ${kai.variable} h-full antialiased${
         ARCHIVE_MODE ? " story-snap" : ""
       }`}
     >

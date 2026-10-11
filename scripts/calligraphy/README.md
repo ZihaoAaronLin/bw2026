@@ -27,11 +27,22 @@ curl -LO https://raw.githubusercontent.com/google/fonts/main/ofl/zhimangxing/Zhi
 
 ## 改了团长的话之后重新抽字
 
-字体只含信里用到的汉字和常用标点（不含英文字母，西文会退回 Geist）。改了 `CAPTAIN_NOTE`
-的文字，要把全文存成 `letter.txt` 后重新抽字，否则新字会退回系统字体：
+团长的话用两款字体，都只抽了用到的字：
+
+- **志莽行书**：题记两句 + 署名（`brush.txt`）
+- **霞鹜文楷**：正文与结尾（`kai.txt`），另含英文字母和数字。
+  下载：<https://github.com/lxgw/LxgwWenKai/releases> 的 `LXGWWenKai-Regular.ttf`（SIL OFL，
+  许可证允许仅用于网页的子集保留原名）
+
+改了 `CAPTAIN_NOTE` 的文字，要按上面的分组把文字分别存好后重新抽字，否则新字会退回其他字体：
 
 ```bash
-.venv/bin/pyftsubset ZhiMangXing-Regular.ttf --text-file=letter.txt \
-  --text="，。？！、：；“”‘’—…（）《》 " --layout-features='*' --no-hinting \
-  --desubroutinize --flavor=woff2 --output-file=src/app/fonts/ZhiMangXing-captain.woff2
+P="，。？！、：；“”‘’—…（）《》 "
+.venv/bin/pyftsubset ZhiMangXing-Regular.ttf --text-file=brush.txt --text="$P" \
+  --layout-features='*' --no-hinting --desubroutinize --flavor=woff2 \
+  --output-file=src/app/fonts/ZhiMangXing-captain.woff2
+.venv/bin/pyftsubset LXGWWenKai-Regular.ttf --text-file=kai.txt \
+  --text="$P ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" \
+  --layout-features='*' --no-hinting --desubroutinize --flavor=woff2 \
+  --output-file=src/app/fonts/LXGWWenKai-captain.woff2
 ```
