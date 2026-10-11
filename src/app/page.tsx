@@ -8,6 +8,7 @@ import { needReconfirm } from "@/lib/visit";
 import AiChat from "@/components/AiChat";
 import ArchiveRecap from "@/components/ArchiveRecap";
 import BootOverlay from "@/components/BootOverlay";
+import CaptainNote from "@/components/CaptainNote";
 import FieldIntel from "@/components/FieldIntel";
 import Gallery from "@/components/Gallery";
 import Hero from "@/components/Hero";
@@ -107,6 +108,7 @@ export default function Home() {
         <FieldIntel />
         <Gallery />
         <WallSay />
+        {ARCHIVE_MODE && <CaptainNote />}
       </main>
 
       <footer className="border-t border-slate-800 px-4 py-12">
