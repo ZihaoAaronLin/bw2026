@@ -50,12 +50,19 @@ def tail_layer(pts, w0, w1, p=0.8, steps=320):
 
 
 ink = Image.new("L", (W, H), 0)
+char_layers = []  # 每个字单独一层（含挂在它身上的拉长笔锋），用于逐字淡入
 for g in spec["chars"]:
     layer, pad = glyph_layer(g["c"], g["size"], g.get("rot", 0), g.get("thin", spec.get("thin_k", 0)))
-    ink.paste(Image.new("L", layer.size, 255), (g["x"] - pad, g["y"] - pad), layer)
+    m = Image.new("L", (W, H), 0)
+    m.paste(Image.new("L", layer.size, 255), (g["x"] - pad, g["y"] - pad), layer)
+    char_layers.append([g["c"], m])
+    ink = Image.fromarray(np.maximum(np.array(ink), np.array(m)))
 for t in spec.get("tails", []):
     tl = tail_layer(t["pts"], t["w0"], t["w1"], t.get("p", 0.8))
     ink = Image.fromarray(np.maximum(np.array(ink), np.array(tl)))
+    for cl in char_layers:  # "of": 这一笔属于哪个字
+        if cl[0] == t.get("of"):
+            cl[1] = Image.fromarray(np.maximum(np.array(cl[1]), np.array(tl)))
 
 a = np.array(ink).astype(np.float32) / 255.0
 
@@ -90,4 +97,18 @@ night.save(f"{out_prefix}-night.png")
 if stage == "final":
     rgba = Image.merge("RGBA", (Image.new("L", alpha.size, 255),) * 3 + (alpha,))
     rgba.save(f"{out_prefix}.webp", "WEBP", quality=88, method=6)
+
+    # 逐字图层：每个字裁到自己的外框，位置相对整幅图（box）记进清单，前端按顺序淡入
+    manifest = {"w": box[2] - box[0], "h": box[3] - box[1], "chars": []}
+    for i, (c, m) in enumerate(char_layers):
+        cb = m.getbbox()
+        cb = (max(cb[0] - 6, box[0]), max(cb[1] - 6, box[1]), min(cb[2] + 6, box[2]), min(cb[3] + 6, box[3]))
+        cm = m.crop(cb)
+        layer = Image.merge("RGBA", (Image.new("L", cm.size, 255),) * 3 + (cm,))
+        name = f"{out_prefix.rsplit('/', 1)[-1]}-{i + 1}.webp"
+        layer.save(f"{out_prefix.rsplit('/', 1)[0]}/{name}", "WEBP", quality=88, method=6)
+        manifest["chars"].append(
+            {"c": c, "file": name, "x": cb[0] - box[0], "y": cb[1] - box[1], "w": cm.size[0], "h": cm.size[1]}
+        )
+    json.dump(manifest, open(f"{out_prefix}.json", "w", encoding="utf-8"), ensure_ascii=False)
 print(f"{out_prefix}: {alpha.size[0]}x{alpha.size[1]}  bbox_on_canvas={box}")

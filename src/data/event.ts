@@ -361,10 +361,36 @@ export const CAPTAIN_NOTE = {
   ],
   /** 收尾：「敬，不完美的明天。」+「最后，」接书法图「愿此行，终抵群星！」 */
   closing: ["敬，不完美的明天。", "最后，"],
-  /** 书法图：用志莽行书排版生成的白墨透明底图（scripts 外部生成，见提交说明） */
+  /**
+   * 书法图：用志莽行书排版生成的白墨透明底图，按字拆成图层（生成脚本见 scripts/calligraphy/）。
+   * x / y / w / h 是每个字在整幅图里的像素位置，前端按这个顺序逐字淡入淡出。
+   */
   art: {
-    title: { src: "/archive/captain-title.webp", w: 1081, h: 843, alt: "团长的话" },
-    closing: { src: "/archive/captain-closing.webp", w: 1545, h: 905, alt: "愿此行，终抵群星！" },
+    title: {
+      alt: "团长的话",
+      w: 1081,
+      h: 769,
+      chars: [
+        { c: "团", src: "/archive/captain-title-1.webp", x: 18, y: 18, w: 317, h: 677 },
+        { c: "长", src: "/archive/captain-title-2.webp", x: 382, y: 205, w: 175, h: 190 },
+        { c: "的", src: "/archive/captain-title-3.webp", x: 461, y: 481, w: 154, h: 166 },
+        { c: "话", src: "/archive/captain-title-4.webp", x: 673, y: 375, w: 390, h: 376 },
+      ],
+    },
+    closing: {
+      alt: "愿此行，终抵群星！",
+      w: 1545,
+      h: 905,
+      chars: [
+        { c: "愿", src: "/archive/captain-closing-1.webp", x: 18, y: 18, w: 415, h: 433 },
+        { c: "此", src: "/archive/captain-closing-2.webp", x: 510, y: 207, w: 137, h: 153 },
+        { c: "行", src: "/archive/captain-closing-3.webp", x: 719, y: 105, w: 188, h: 252 },
+        { c: "终", src: "/archive/captain-closing-4.webp", x: 549, y: 573, w: 157, h: 179 },
+        { c: "抵", src: "/archive/captain-closing-5.webp", x: 739, y: 603, w: 180, h: 155 },
+        { c: "群", src: "/archive/captain-closing-6.webp", x: 936, y: 549, w: 181, h: 214 },
+        { c: "星", src: "/archive/captain-closing-7.webp", x: 1235, y: 450, w: 292, h: 437 },
+      ],
+    },
   },
   /** 回忆录分页：每页放 paragraphs 的哪几段；第一页带标题与题记，最后一页带收尾与署名 */
   pages: [[0, 1], [2, 3, 4], [5]],

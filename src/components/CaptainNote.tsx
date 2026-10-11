@@ -21,6 +21,45 @@ function pauseAfter(c: string) {
  * 逐字打出的段落：底层隐形全文占位（换行与最终一致，打字时页面不跳），
  * 上层空 span 由页面的打字引擎逐字写入；读屏软件读 sr-only 的全文。
  */
+type Art = (typeof CAPTAIN_NOTE.art)["title"];
+
+/**
+ * 书法图：每个字一层透明小图，按生成时记下的位置叠成整幅；--i 是书写顺序，
+ * 淡入淡出都按这个顺序一个字一个字来。整体对读屏软件是一张图（role="img"）。
+ */
+function BrushArt({ art, className }: { art: Art; className: string }) {
+  return (
+    <div
+      data-art={art.chars.length}
+      role="img"
+      aria-label={art.alt}
+      className={`story-art relative ${className}`}
+      style={{ aspectRatio: `${art.w} / ${art.h}` }}
+    >
+      {art.chars.map((c, i) => (
+        <Image
+          key={c.src}
+          src={c.src}
+          width={c.w}
+          height={c.h}
+          alt=""
+          aria-hidden
+          loading="eager"
+          className="story-char absolute h-auto"
+          style={
+            {
+              left: `${(c.x / art.w) * 100}%`,
+              top: `${(c.y / art.h) * 100}%`,
+              width: `${(c.w / art.w) * 100}%`,
+              "--i": i,
+            } as React.CSSProperties
+          }
+        />
+      ))}
+    </div>
+  );
+}
+
 function Typed({ text, className = "" }: { text: string; className?: string }) {
   return (
     <p className={`relative ${className}`}>
@@ -34,7 +73,8 @@ function Typed({ text, className = "" }: { text: string; className?: string }) {
 }
 
 /**
- * 回忆录的一页。翻到这一页时按顺序播放：书法图「写出来」→ 逐字打字 → 署名淡入。
+ * 回忆录的一页。翻到这一页时按顺序播放：书法图淡入 → 逐字打字 → 署名淡入；
+ * 书法图离开时淡出、回来再淡入。
  * 只改文本节点和 class，不触发 React 重渲染；每页只播一次，点一下直接显示全部。
  */
 function LetterPage({ paragraphs, index, total }: { paragraphs: number[]; index: number; total: number }) {
@@ -59,7 +99,7 @@ function LetterPage({ paragraphs, index, total }: { paragraphs: number[]; index:
       if (timer) clearTimeout(timer);
       for (const el of steps) {
         if (el.dataset.type !== undefined) el.textContent = el.dataset.type;
-        if (el.dataset.art !== undefined) el.classList.add("brush-done");
+        if (el.dataset.art !== undefined) el.classList.add("is-revealed");
         if (el.dataset.fade !== undefined) el.style.opacity = "1";
       }
       cursor.remove();
@@ -73,8 +113,9 @@ function LetterPage({ paragraphs, index, total }: { paragraphs: number[]; index:
       }
       const el = steps[i];
       if (el.dataset.art !== undefined) {
-        el.classList.add("brush-go");
-        timer = setTimeout(() => run(i + 1), 1100);
+        // 页面可见时按顺序逐字淡入（见 globals.css .story-char），等最后一个字淡入完再往下打
+        el.classList.add("is-revealed");
+        timer = setTimeout(() => run(i + 1), Number(el.dataset.art) * 140 + 600);
         return;
       }
       if (el.dataset.fade !== undefined) {
@@ -99,17 +140,23 @@ function LetterPage({ paragraphs, index, total }: { paragraphs: number[]; index:
       tick();
     };
 
+    // 可见度 ≥ 40% 视为「翻到这一页」：加 is-visible（书法图淡入），离开时去掉（淡出）；
+    // 第一次翻到时开始播放。减少动态效果时直接显示全文，只保留可见性切换。
+    let started = false;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      started = true;
       finish();
-      return;
     }
     const io = new IntersectionObserver(
       ([e]) => {
-        if (!e.isIntersecting) return;
-        io.disconnect();
-        timer = setTimeout(() => run(0), 250);
+        const on = e.intersectionRatio >= 0.4;
+        root.classList.toggle("is-visible", on);
+        if (on && !started) {
+          started = true;
+          timer = setTimeout(() => run(0), 250);
+        }
       },
-      { threshold: 0.35 },
+      { threshold: [0, 0.4, 0.7] },
     );
     io.observe(root);
     root.addEventListener("click", finish);
@@ -135,15 +182,7 @@ function LetterPage({ paragraphs, index, total }: { paragraphs: number[]; index:
 
         {first && (
           <>
-            <Image
-              data-art=""
-              src={art.title.src}
-              width={art.title.w}
-              height={art.title.h}
-              alt={art.title.alt}
-              loading="eager"
-              className="brush-reveal mb-7 h-auto w-[72%] max-w-[300px]"
-            />
+            <BrushArt art={art.title} className="mb-7 w-[72%] max-w-[300px]" />
             <div className="mb-7 border-l border-white/25 pl-4 text-[18px] leading-8 text-slate-300">
               {epigraph.map((l) => (
                 <Typed key={l} text={l} />
@@ -162,15 +201,7 @@ function LetterPage({ paragraphs, index, total }: { paragraphs: number[]; index:
           <div className="mt-7">
             <Typed text={closing[0]} className="text-[22px] leading-[1.85]" />
             <Typed text={closing[1]} className="mt-5 text-[21px] leading-[1.85]" />
-            <Image
-              data-art=""
-              src={art.closing.src}
-              width={art.closing.w}
-              height={art.closing.h}
-              alt={art.closing.alt}
-              loading="eager"
-              className="brush-reveal mt-1 h-auto w-[92%] max-w-[380px]"
-            />
+            <BrushArt art={art.closing} className="mt-1 w-[92%] max-w-[380px]" />
             <p
               data-fade=""
               className="mt-6 text-right text-[22px] opacity-0 transition-opacity duration-700"

@@ -245,29 +245,20 @@ html.story-snap footer {
   scroll-snap-align: end;
 }
 
-/* 团长的话：书法图从左往右「写出来」（遮罩扫过，只重绘这一小块图） */
-.brush-reveal {
-  -webkit-mask-image: linear-gradient(100deg, #000 42%, transparent 58%);
-  mask-image: linear-gradient(100deg, #000 42%, transparent 58%);
-  -webkit-mask-size: 300% 100%;
-  mask-size: 300% 100%;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: 100% 0;
-  mask-position: 100% 0;
+/* 团长的话：书法图按书写顺序一个字一个字淡入；滑走时按同样顺序一个字一个字淡出，
+   滑回来再依次淡入。--i 是字的序号，淡入淡出共用同一套延迟。
+   只动 opacity / transform，交给合成层，旧手机也不掉帧 */
+.story-art .story-char {
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--i) * 140ms);
 }
-.brush-reveal.brush-go {
-  animation: brush-in 1.4s cubic-bezier(0.3, 0.6, 0.3, 1) forwards;
-}
-.brush-reveal.brush-done {
-  -webkit-mask-image: none;
-  mask-image: none;
-}
-@keyframes brush-in {
-  to {
-    -webkit-mask-position: 0 0;
-    mask-position: 0 0;
-  }
+.is-visible .story-art.is-revealed .story-char {
+  opacity: 1;
+  transform: none;
 }
 
 /* 弱机型 / 用户偏好：一键静默装饰动画 */
@@ -280,8 +271,8 @@ html.story-snap footer {
   html {
     scroll-behavior: auto;
   }
-  .brush-reveal {
-    -webkit-mask-image: none;
-    mask-image: none;
+  .story-art .story-char {
+    transform: none;
+    transition: none;
   }
 }

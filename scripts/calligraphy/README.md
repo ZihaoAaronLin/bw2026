@@ -17,8 +17,13 @@ curl -LO https://raw.githubusercontent.com/google/fonts/main/ofl/zhimangxing/Zhi
 
 ```bash
 .venv/bin/python scripts/calligraphy/calli.py ZhiMangXing-Regular.ttf scripts/calligraphy/title.json out/title
-# 生成 out/title.webp（成品）、out/title-preview.png（白底预览）、out/title-night.png（深夜蓝预览）
+# 生成 out/title-preview.png（白底预览）、out/title-night.png（深夜蓝预览）、out/title.webp（整图）
+# 以及逐字图层 out/title-1.webp … 和位置清单 out/title.json
 ```
+
+网站用的是**逐字图层**（翻页时一个字一个字淡入淡出）：把 `out/title-N.webp` 复制成
+`public/archive/captain-title-N.webp`，再按 `out/title.json` 里每个字的 x / y / w / h 更新
+`src/data/event.ts` 里 `CAPTAIN_NOTE.art.title`。拉长的笔锋用 `"of": "团"` 指定挂在哪个字上。
 
 ## 改了团长的话之后重新抽字
 
