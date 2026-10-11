@@ -225,6 +225,51 @@ body {
   background-size: 44px 44px;
 }
 
+/* ============ 归档回忆录：前几屏整页吸附翻页 ============ */
+/* 用浏览器原生滚动吸附（跟手、惯性都是系统的），不用 JS 劫持手势 */
+html.story-snap {
+  scroll-snap-type: y mandatory;
+}
+/* svh 不随地址栏伸缩变化，翻页位置稳定；不支持 svh 的旧浏览器退回 vh */
+.story-page {
+  min-height: 100vh;
+  min-height: 100svh;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+/* 回忆录之后的常规模块整段算一个吸附区，内部自由滚动 */
+.story-tail {
+  scroll-snap-align: start;
+}
+html.story-snap footer {
+  scroll-snap-align: end;
+}
+
+/* 团长的话：书法图从左往右「写出来」（遮罩扫过，只重绘这一小块图） */
+.brush-reveal {
+  -webkit-mask-image: linear-gradient(100deg, #000 42%, transparent 58%);
+  mask-image: linear-gradient(100deg, #000 42%, transparent 58%);
+  -webkit-mask-size: 300% 100%;
+  mask-size: 300% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: 100% 0;
+  mask-position: 100% 0;
+}
+.brush-reveal.brush-go {
+  animation: brush-in 1.4s cubic-bezier(0.3, 0.6, 0.3, 1) forwards;
+}
+.brush-reveal.brush-done {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+@keyframes brush-in {
+  to {
+    -webkit-mask-position: 0 0;
+    mask-position: 0 0;
+  }
+}
+
 /* 弱机型 / 用户偏好：一键静默装饰动画 */
 @media (prefers-reduced-motion: reduce) {
   .glitch::before,
@@ -234,5 +279,9 @@ body {
   }
   html {
     scroll-behavior: auto;
+  }
+  .brush-reveal {
+    -webkit-mask-image: none;
+    mask-image: none;
   }
 }

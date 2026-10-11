@@ -100,15 +100,19 @@ export default function Home() {
 
       <main>
         <Hero />
-        {ARCHIVE_MODE && <ArchiveRecap />}
-        <IntelBrief />
-        <TerminalUnlock />
-        <PosterGenerator faction={faction} onSelect={selectFaction} />
-        <RadarMap faction={faction} />
-        <FieldIntel />
-        <Gallery />
-        <WallSay />
+        {/* 归档版「回忆录」：首屏 → 团长的话 → 数据回顾，整页吸附翻页 */}
         {ARCHIVE_MODE && <CaptainNote />}
+        {ARCHIVE_MODE && <ArchiveRecap />}
+        {/* 之后的玩法模块整段自由滚动 */}
+        <div className={ARCHIVE_MODE ? "story-tail" : undefined}>
+          <IntelBrief />
+          <TerminalUnlock />
+          <PosterGenerator faction={faction} onSelect={selectFaction} />
+          <RadarMap faction={faction} />
+          <FieldIntel />
+          <Gallery />
+          <WallSay />
+        </div>
       </main>
 
       <footer className="border-t border-slate-800 px-4 py-12">

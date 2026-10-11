@@ -7,7 +7,11 @@ import XhsLink from "./XhsLink";
 
 export default function Hero() {
   return (
-    <section className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-4">
+    <section
+      className={`relative flex flex-col items-center justify-center overflow-hidden px-4 ${
+        ARCHIVE_MODE ? "story-page" : "min-h-dvh"
+      }`}
+    >
       {/* 静态径向光斑 + 网格地板（无滤镜、无动画，渲染一次） */}
       <div className="cyber-grid pointer-events-none absolute inset-0" />
       <div className="pointer-events-none absolute -left-1/4 top-0 h-[60vh] w-[80vw] bg-[radial-gradient(ellipse_at_center,rgba(181,23,158,0.22),transparent_62%)]" />
@@ -100,8 +104,8 @@ export default function Hero() {
       </motion.div>
 
       <a
-        href={ARCHIVE_MODE ? "#recap" : "#intel"}
-        aria-label={ARCHIVE_MODE ? "向下查看数据回顾" : "向下滚动"}
+        href={ARCHIVE_MODE ? "#captain-note" : "#intel"}
+        aria-label={ARCHIVE_MODE ? "向下翻到团长的话" : "向下滚动"}
         className="absolute bottom-6 left-1/2 -translate-x-1/2 text-neon"
       >
         <ChevronDown size={30} className="animate-bounce-down" />
